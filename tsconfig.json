@@ -12,7 +12,8 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "target": "es5",
-    "outDir": "dist"
+    "outDir": "dist",
+    "allowJs": true
   },
   "include": [
     "index.ts",

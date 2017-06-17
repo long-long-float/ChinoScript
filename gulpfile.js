@@ -1,5 +1,6 @@
 const gulp = require('gulp')
 const ts   = require('gulp-typescript')
+const pegjs = require('gulp-pegjs')
 const merge = require('merge2')
 
 gulp.task('build', () => {
@@ -7,6 +8,7 @@ gulp.task('build', () => {
   const tsResult = tsProject.src().pipe(tsProject())
 
   return merge([
+    gulp.src('src/parser.pegjs').pipe(pegjs({ format: 'globals', exportVar: 'parser' })).pipe(gulp.dest('src')),
     tsResult.dts.pipe(gulp.dest('./definitions')),
     tsResult.js.pipe(gulp.dest(tsProject.config.compilerOptions.outDir))
   ])
