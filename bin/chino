@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+const ChinoScript = require('../dist/index.js')
+const fs = require('fs')
+
+if (process.argv[2] == undefined) {
+  console.log('usage: chino FILE')
+} else {
+  const code = fs.readFileSync(process.argv[2]).toString()
+
+  console.log(ChinoScript.parse(code))
+}
+

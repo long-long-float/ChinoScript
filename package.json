@@ -2,9 +2,10 @@
   "name": "chinoscript",
   "version": "1.0.0",
   "description": "A programming language like C",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp build"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,13 @@
   "bugs": {
     "url": "https://github.com/long-long-float/ChinoScript/issues"
   },
-  "homepage": "https://github.com/long-long-float/ChinoScript#readme"
+  "homepage": "https://github.com/long-long-float/ChinoScript#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-cli": "^1.3.0",
+    "gulp-typescript": "^3.1.7",
+    "merge2": "^1.0.3",
+    "pegjs": "^0.10.0",
+    "typescript": "^2.3.4"
+  }
 }
