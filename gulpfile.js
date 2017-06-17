@@ -13,3 +13,7 @@ gulp.task('build', () => {
     tsResult.js.pipe(gulp.dest(tsProject.config.compilerOptions.outDir))
   ])
 })
+
+gulp.task('watch-build', () => {
+  return gulp.watch('src/*', ['build'])
+})
