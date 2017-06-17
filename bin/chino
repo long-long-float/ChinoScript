@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const ChinoScript = require('../dist/index.js')
+const parser = require('../src/parser.js')
 const fs = require('fs')
 const util = require('util')
 
@@ -8,8 +9,26 @@ if (process.argv[2] == undefined) {
   console.log('usage: chino FILE')
 } else {
   const code = fs.readFileSync(process.argv[2]).toString()
-  const ast = ChinoScript.parse(code)
+  let ast
+  try {
+    ast = ChinoScript.parse(code)
 
-  console.log(util.inspect(ast, false, null))
+    console.log(util.inspect(ast, false, null))
+  } catch (e) {
+    if (e instanceof parser.parser.SyntaxError) {
+      const l = e.location.start
+      let msg = e.message
+      const line = code.split(/\r\n|\r|\n/)
+      let space = '';
+      for (var i = 0; i < l.column - 1; i++) { space += ' ' }
+      msg += `
+${line[l.line - 1]}
+${space + '^'}`
+
+      console.log(msg);
+    } else {
+      throw e
+    }
+  }
 }
 

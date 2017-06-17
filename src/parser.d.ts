@@ -1,5 +1,7 @@
 // http://qiita.com/m0a/items/710b8f2b8327868cf049
 
+import * as AST from './ast'
+
 export module parser{
   interface ParserOptions {
     startRule?: string
@@ -27,5 +29,5 @@ export module parser{
     name : 'SyntaxError'
   }
 
-  export function parse(input: string, options?:ParserOptions): any
+  export function parse(input: string, options?:ParserOptions): AST.ASTNode
 }
