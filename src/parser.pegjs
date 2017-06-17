@@ -1,7 +1,6 @@
 {
-  // FIXME: ./ast.jsに修正
-  const AST = require('../dist/ast.js')
-  const Types = require('../dist/types.js')
+  const AST = require('./ast.js')
+  const Types = require('./types.js')
 
   const RESERVED_WORDS = ["return", "int", "string", "char", "void", "for", "while", "if"];
 
