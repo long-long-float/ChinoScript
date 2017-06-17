@@ -2,12 +2,14 @@
 
 const ChinoScript = require('../dist/index.js')
 const fs = require('fs')
+const util = require('util')
 
 if (process.argv[2] == undefined) {
   console.log('usage: chino FILE')
 } else {
   const code = fs.readFileSync(process.argv[2]).toString()
+  const ast = ChinoScript.parse(code)
 
-  console.log(ChinoScript.parse(code))
+  console.log(util.inspect(ast, false, null))
 }
 
