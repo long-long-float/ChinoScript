@@ -1,6 +1,7 @@
 {
   // FIXME: ./ast.jsに修正
   const AST = require('../dist/ast.js')
+  const Types = require('../dist/types.js')
 
   const RESERVED_WORDS = ["return", "int", "string", "char", "void", "for", "while", "if"];
 
@@ -27,10 +28,32 @@
     return new AST.UnaryOpFront(op, right, location());
   }
 
-  function mkargs(fst_arg, rest_args) {
+  function args(fst_arg, rest_args) {
     if(fst_arg === null) return [];
     else { return filter(flatten([fst_arg].concat(rest_args))); }
   }
+
+  function type(id, ary) {
+    // FIXME: どうにかしたい
+    const typeTable = {
+      'int': 'Integer', 'bool': 'Boolean', 'char': 'Char'
+    };
+
+    const typeName = typeTable.hasOwnProperty(id.value) ?
+      typeTable[id.value] : id.value;
+
+    if (ary.length > 0) {
+      return new Types.Type('Array', [new Types.Type(typeName)]);
+    } else if (id.value === 'void') {
+      return new Types.Type('Tuple', []);
+    } else if (id.value === 'string') {
+      return new Types.Type('Array', [new Types.Type('Char')]);
+    } else {
+      return new Types.Type(typeName);
+    }
+  }
+
+  // utility functions
 
   function is_array(obj) {
     return Object.prototype.toString.call(obj) === "[object Array]";
@@ -65,6 +88,11 @@ top_statement
 
 statement
   = expr:expression _ ";" { return expr }
+  / def_var
+
+def_var
+  = eternal:"eternal"? _ type:type _ name:identifier _ length:("[" integer "]")? _ init_value:("=" _  expression) _ ";"
+    { return new AST.DefineVariable(eternal !== null, type, name, length !== null ? length[1] : null, init_value[2]); }
 
 expression
   = term:term0
@@ -101,14 +129,14 @@ unary
 factor
   = "(" _ expr:expression _ ")" { return expr; }
   / name:identifier _ "(" _ fst_arg:expression? rest_args:(_ "," _ expression)* _ ")"
-    { return new AST.CallFunction(name, mkargs(fst_arg, rest_args)); }
+    { return new AST.CallFunction(name, args(fst_arg, rest_args)); }
   / integer
   /*/ string
   / char
-  / boolean
+  / boolean */
   / id:identifier index:(_ "[" _ expression _ "]" _)?
-    { return ref_var(id, index); }
-  / array*/
+    { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
+  /// array
 
 integer
   // TODO: 負数に対応
@@ -119,9 +147,19 @@ comment
   // TODO: 複数行コメントに対応
   = "//" [^\n\r]* _ { return null; }
 
+type
+  = id:type_identifier ary:(_ "[" "]")*
+    & { return ["return"].indexOf(id.value) === -1; }
+    { return type(id, ary); }
+
 identifier
   = content:([a-zA-Z_][a-zA-Z_0-9]*)
     & { return RESERVED_WORDS.indexOf(text()) === -1; }
+    { return new AST.Identifier(text(), location()); }
+
+type_identifier
+  = content:([a-zA-Z_][a-zA-Z_0-9]*)
+    & { return ["return"].indexOf(text()) === -1; }
     { return new AST.Identifier(text(), location()); }
 
 nl

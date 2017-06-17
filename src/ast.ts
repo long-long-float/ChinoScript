@@ -1,9 +1,31 @@
+import { Type } from './types'
 import { parser } from './parser.d'
 
 export class ASTNode {
   constructor(
     public location: parser.Location
   ) {}
+}
+
+export class Statement extends ASTNode {
+  constructor(
+    location: parser.Location
+  ) {
+    super(location)
+  }
+}
+
+export class DefineVariable extends Statement {
+  constructor(
+    isEternal: boolean,
+    type: Type,
+    name: Identifier,
+    length: IntegerLiteral | null,
+    initialValue: Expression,
+    location: parser.Location
+  ) {
+    super(location)
+  }
 }
 
 export class Expression extends ASTNode {
@@ -39,6 +61,15 @@ export class CallFunction extends Expression {
   constructor(
     public name: Identifier,
     public args: Expression[]
+  ) {
+    super(name.location)
+  }
+}
+
+export class ReferenceVariable extends Expression {
+  constructor(
+    public name: Identifier,
+    public index: Expression | null
   ) {
     super(name.location)
   }
