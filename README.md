@@ -1,6 +1,8 @@
 ChinoScript
 ====
 
+[![Build Status](https://travis-ci.org/long-long-float/ChinoScript.svg?branch=master)](https://travis-ci.org/long-long-float/ChinoScript)
+
 > Ah＾～ It makes my heart keep hopping＾～
 
 ChinoScript is a programming language like C language. It was developed for [CodeColosseum](https://trapti.tech/works/1803/).
