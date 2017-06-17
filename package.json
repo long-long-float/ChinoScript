@@ -1,0 +1,19 @@
+{
+  "name": "chinoscript",
+  "version": "1.0.0",
+  "description": "A programming language like C",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/long-long-float/ChinoScript.git"
+  },
+  "author": "long_long_float",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/long-long-float/ChinoScript/issues"
+  },
+  "homepage": "https://github.com/long-long-float/ChinoScript#readme"
+}
