@@ -4,7 +4,7 @@
   "description": "A programming language like C",
   "main": "dist/index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha dist/test",
     "build": "gulp build",
     "watch-build": "gulp watch-build"
   },
