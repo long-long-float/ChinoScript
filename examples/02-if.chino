@@ -1,0 +1,13 @@
+int a = 1;
+if(a == 1) {
+  puts("OK");
+} else {
+  puts("NG");
+};
+
+a = 2;
+if (a == 1) {
+  puts("NG");
+} else {
+  puts("OK");
+};

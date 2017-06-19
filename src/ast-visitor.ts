@@ -7,6 +7,9 @@ export interface ASTVisitor<T> {
   visitUnaryOpFront(node: AST.UnaryOpFront): T
   visitCallFunction(node: AST.CallFunction): T
   visitReferenceVariable(node: AST.ReferenceVariable): T
+  visitIfExpression(node: AST.IfExpression): T
   visitIntegerLiteral(node: AST.IntegerLiteral): T
+  visitStringLiteral(node: AST.StringLiteral): T
+  visitBlock(node: AST.Block): T
   visitIdentifier(node: AST.Identifier): T
 }

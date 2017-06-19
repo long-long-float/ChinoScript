@@ -137,20 +137,36 @@ unary
 
 factor
   = "(" _ expr:expression _ ")" { return expr; }
+  / if_expr
   / name:identifier _ "(" _ fst_arg:expression? rest_args:(_ "," _ expression)* _ ")"
     { return new AST.CallFunction(name, args(fst_arg, rest_args)); }
   / integer
-  /*/ string
-  / char
+  / string
+  /*/ char
   / boolean */
   / id:identifier index:(_ "[" _ expression _ "]" _)?
     { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
   /// array
 
+string
+  // TODO: エスケープ周りを修正
+  = "\"" value:([^"]*) "\""
+    { return new AST.StringLiteral(value.join("")); }
+
 integer
   // TODO: 負数に対応
   = [0-9]+
     { return new AST.IntegerLiteral(parseInt(text(), 10), location()); }
+
+if_expr
+  = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
+    { return new AST.IfExpression(cond, iftrue, iffalse !== null ? iffalse[3] : null); }
+
+block
+  = "{" _ comment? _ stmts:(statement _ comment? / comment) * _ "}"
+    { return new AST.Block(filter(flatten(stmts)), location()); }
+  / stmt:statement
+    { return new AST.Block([stmt], location()); }
 
 comment
   // TODO: 複数行コメントに対応

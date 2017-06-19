@@ -10,7 +10,7 @@ gulp.task('build', () => {
   return merge([
     tsResult.dts.pipe(gulp.dest('./definitions')),
     tsResult.js.pipe(gulp.dest(tsProject.config.compilerOptions.outDir)),
-    gulp.src('src/parser.pegjs').pipe(pegjs({ format: 'globals', exportVar: 'parser' })).pipe(gulp.dest('dist/src')),
+    gulp.src('src/parser.pegjs').pipe(pegjs({ format: 'globals', exportVar: 'parser', cache: true })).pipe(gulp.dest('dist/src')),
   ])
 })
 

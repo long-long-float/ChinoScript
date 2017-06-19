@@ -1,2 +1,2 @@
 export type Value = any
-export type Primitive = number
+export type Primitive = number | string

@@ -130,6 +130,19 @@ export class ReferenceVariable extends Expression {
   }
 }
 
+export class IfExpression extends Expression {
+  constructor(
+    public condition: Expression,
+    public thenBlock: Block,
+    public elseBlock: Block,
+  ) {
+    super(condition.location)
+  }
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitIfExpression(this)
+  }
+}
+
 export class IntegerLiteral extends Expression {
   constructor(
     public value: number,
@@ -140,6 +153,32 @@ export class IntegerLiteral extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitIntegerLiteral(this)
+  }
+}
+
+export class StringLiteral extends Expression {
+  constructor(
+    public value: string,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitStringLiteral(this)
+  }
+}
+
+export class Block extends Statement {
+  constructor(
+    public statemetns: Statement[],
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitBlock(this)
   }
 }
 

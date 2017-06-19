@@ -41,8 +41,17 @@ export class Compiler implements ASTVisitor<void> {
   visitReferenceVariable(node: AST.ReferenceVariable): void {
     this.addOperation(new op.Load(node.name))
   }
+  visitIfExpression(node: AST.IfExpression): void {
+    throw new Error("Method not implemented.");
+  }
   visitIntegerLiteral(node: AST.IntegerLiteral): void {
     this.addOperation(new op.Push(node.value))
+  }
+  visitStringLiteral(node: AST.StringLiteral): void {
+    this.addOperation(new op.Push(node.value))
+  }
+  visitBlock(node: AST.Block): void {
+    throw new Error("Method not implemented.");
   }
   visitIdentifier(node: AST.Identifier): void {
     throw new Error("Method not implemented.");
