@@ -29,5 +29,5 @@ export module parser{
     name : 'SyntaxError'
   }
 
-  export function parse(input: string, options?:ParserOptions): AST.ASTNode
+  export function parse(input: string, options?:ParserOptions): AST.ASTNode[]
 }

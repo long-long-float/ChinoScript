@@ -11,9 +11,8 @@ if (process.argv[2] == undefined) {
   const code = fs.readFileSync(process.argv[2]).toString()
   let ast
   try {
-    ast = ChinoScript.parse(code)
+    ChinoScript.evaluate(code)
 
-    console.log(util.inspect(ast, false, null))
   } catch (e) {
     if (e instanceof parser.parser.SyntaxError) {
       const l = e.location.start

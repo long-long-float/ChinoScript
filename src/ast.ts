@@ -1,18 +1,23 @@
 import { Type } from './types'
 import { parser } from './parser.d'
+import { ASTVisitor } from './ast-visitor'
 
-export class ASTNode {
+export abstract class ASTNode {
   constructor(
     public location: parser.Location
   ) {}
+
+  abstract accept<T>(visitor: ASTVisitor<T>): T
 }
 
-export class Statement extends ASTNode {
+export abstract class Statement extends ASTNode {
   constructor(
     location: parser.Location
   ) {
     super(location)
   }
+
+  abstract accept<T>(visitor: ASTVisitor<T>): T
 }
 
 export class DefineVariable extends Statement {
@@ -26,14 +31,20 @@ export class DefineVariable extends Statement {
   ) {
     super(location)
   }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitDefineVariable(this)
+  }
 }
 
-export class Expression extends ASTNode {
+export abstract class Expression extends ASTNode {
   constructor(
     location: parser.Location
   ) {
     super(location)
   }
+
+  abstract accept<T>(visitor: ASTVisitor<T>): T
 }
 
 export class BinaryOp extends Expression {
@@ -45,6 +56,10 @@ export class BinaryOp extends Expression {
   ) {
     super(location)
   }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitBinaryOp(this)
+  }
 }
 
 export class UnaryOpFront extends Expression {
@@ -55,6 +70,10 @@ export class UnaryOpFront extends Expression {
   ) {
     super(location)
   }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitUnaryOpFront(this)
+  }
 }
 
 export class CallFunction extends Expression {
@@ -63,6 +82,10 @@ export class CallFunction extends Expression {
     public args: Expression[]
   ) {
     super(name.location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitCallFunction(this)
   }
 }
 
@@ -73,6 +96,10 @@ export class ReferenceVariable extends Expression {
   ) {
     super(name.location)
   }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitReferenceVariable(this)
+  }
 }
 
 export class IntegerLiteral extends Expression {
@@ -82,6 +109,10 @@ export class IntegerLiteral extends Expression {
   ) {
     super(location)
   }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitIntegerLiteral(this)
+  }
 }
 
 export class Identifier extends ASTNode {
@@ -90,5 +121,9 @@ export class Identifier extends ASTNode {
     location: parser.Location
   ) {
     super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitIdentifier(this)
   }
 }
