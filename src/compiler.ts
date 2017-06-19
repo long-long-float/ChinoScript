@@ -4,6 +4,7 @@ import * as op from './operation'
 
 export class Compiler implements ASTVisitor<void> {
   private _operations: op.Operation[] = []
+  private labelCounter = 0
 
   constructor() {
   }
@@ -29,7 +30,11 @@ export class Compiler implements ASTVisitor<void> {
   visitBinaryOp(node: AST.BinaryOp): void {
     node.left.accept(this)
     node.right.accept(this)
-    this.addOperation(new op.IArith(node.op as op.ArithmeticOperation))
+    if (op.isArithmeticOperation(node.op)) {
+      this.addOperation(new op.IArith(node.op as op.ArithmeticOperation))
+    } else {
+      this.addOperation(new op.ICmp(node.op as op.PredicationalOperation))
+    }
   }
   visitUnaryOpFront(node: AST.UnaryOpFront): void {
     throw new Error("Method not implemented.");
@@ -42,7 +47,22 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Load(node.name))
   }
   visitIfExpression(node: AST.IfExpression): void {
-    throw new Error("Method not implemented.");
+    node.condition.accept(this)
+
+    const elseLabel = this.createLabel()
+    const endLabel  = this.createLabel()
+
+    this.addOperation(new op.JumpUnless(elseLabel.id))
+
+    // then
+    node.thenBlock.accept(this)
+    this.addOperation(new op.Jump(endLabel.id))
+
+    // else
+    this.addOperation(elseLabel)
+    node.elseBlock.accept(this)
+
+    this.addOperation(endLabel)
   }
   visitIntegerLiteral(node: AST.IntegerLiteral): void {
     this.addOperation(new op.Push(node.value))
@@ -51,9 +71,13 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Push(node.value))
   }
   visitBlock(node: AST.Block): void {
-    throw new Error("Method not implemented.");
+    node.statemetns.forEach((stmt) => stmt.accept(this))
   }
   visitIdentifier(node: AST.Identifier): void {
     throw new Error("Method not implemented.");
+  }
+
+  private createLabel() {
+    return new op.Label(this.labelCounter++)
   }
 }

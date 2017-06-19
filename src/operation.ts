@@ -37,10 +37,47 @@ export class Load extends Operation {
 }
 
 export type ArithmeticOperation = '+' | '-' | '*' | '/' | '%'
+export type PredicationalOperation = '<=' | '>=' | '<' | '>' | '==' | '!='
+
+export function isArithmeticOperation(op: string): boolean {
+  return op === '+' || op === '-' || op === '*' || op === '/' || op === '%'
+}
 
 export class IArith extends Operation {
   constructor(
     public operation: ArithmeticOperation
+  ) {
+    super()
+  }
+}
+
+export class ICmp extends Operation {
+  constructor(
+    public operation: PredicationalOperation
+  ) {
+    super()
+  }
+}
+
+export class Jump extends Operation {
+  constructor(
+    public destination: number
+  ) {
+    super()
+  }
+}
+
+export class JumpUnless extends Operation {
+  constructor(
+    public destination: number
+  ) {
+    super()
+  }
+}
+
+export class Label extends Operation {
+  constructor(
+    public id: number
   ) {
     super()
   }
