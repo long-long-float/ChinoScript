@@ -22,11 +22,11 @@ export abstract class Statement extends ASTNode {
 
 export class DefineVariable extends Statement {
   constructor(
-    isEternal: boolean,
-    type: Type,
-    name: Identifier,
-    length: IntegerLiteral | null,
-    initialValue: Expression,
+    public isEternal: boolean,
+    public type: Type,
+    public name: Identifier,
+    public length: IntegerLiteral | null,
+    public initialValue: Expression,
     location: parser.Location
   ) {
     super(location)

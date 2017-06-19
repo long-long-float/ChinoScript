@@ -19,3 +19,19 @@ export class Push extends Operation {
     super()
   }
 }
+
+export class Store extends Operation {
+  constructor(
+    public id: AST.Identifier // TODO: index: numberにする
+  ) {
+    super()
+  }
+}
+
+export class Load extends Operation {
+  constructor(
+    public id: AST.Identifier // TODO: index: numberにする
+  ) {
+    super()
+  }
+}

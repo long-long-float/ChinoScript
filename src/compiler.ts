@@ -17,7 +17,9 @@ export class Compiler implements ASTVisitor<void> {
   }
 
   visitDefineVariable(node: AST.DefineVariable): void {
-    throw new Error("Method not implemented.");
+    // TODO: 変数名を登録する
+    node.initialValue.accept(this)
+    this.addOperation(new op.Store(node.name))
   }
   visitBinaryOp(node: AST.BinaryOp): void {
     throw new Error("Method not implemented.");
@@ -30,7 +32,7 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.CallFunction(node.name, node.args.length))
   }
   visitReferenceVariable(node: AST.ReferenceVariable): void {
-    throw new Error("Method not implemented.");
+    this.addOperation(new op.Load(node.name))
   }
   visitIntegerLiteral(node: AST.IntegerLiteral): void {
     this.addOperation(new op.Push(node.value))
