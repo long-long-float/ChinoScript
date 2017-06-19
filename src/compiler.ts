@@ -22,7 +22,9 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Store(node.name))
   }
   visitBinaryOp(node: AST.BinaryOp): void {
-    throw new Error("Method not implemented.");
+    node.left.accept(this)
+    node.right.accept(this)
+    this.addOperation(new op.IArith(node.op as op.ArithmeticOperation))
   }
   visitUnaryOpFront(node: AST.UnaryOpFront): void {
     throw new Error("Method not implemented.");

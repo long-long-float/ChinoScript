@@ -25,7 +25,24 @@ export class VirtualMachine {
       Load: (operation: op.Load) => {
         this.stack.push(this.env[operation.id.value])
       },
+      IArith: (operation: op.IArith) => {
+        const right = this.stack.pop()
+        const left = this.stack.pop()
+        let result: Value.Value // TODO: Value.Integerにする
+        switch (operation.operation) {
+          case '+': result = left + right; break
+          case '-': result = left - right; break
+          case '*': result = left * right; break
+          case '/': result = left / right; break
+          case '%': result = left % right; break
+        }
+        this.stack.push(Math.floor(result))
+      }
     }
+  }
+
+  topOfStack(): Value.Value {
+    return this.stack[this.stack.length - 1]
   }
 
   run(operations: op.Operation[]) {

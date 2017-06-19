@@ -35,3 +35,13 @@ export class Load extends Operation {
     super()
   }
 }
+
+export type ArithmeticOperation = '+' | '-' | '*' | '/' | '%'
+
+export class IArith extends Operation {
+  constructor(
+    public operation: ArithmeticOperation
+  ) {
+    super()
+  }
+}
