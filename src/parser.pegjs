@@ -18,7 +18,11 @@
       else {
         left = binary_op_intr(nodes);
       }
-      return new AST.BinaryOp(left, op, right, location());
+      if (op === '=') {
+        return new AST.Assign(left, right, location());
+      } else {
+        return new AST.BinaryOp(left, op, right, location());
+      }
     }
     return binary_op_intr(left.concat(rest));
   }
@@ -94,7 +98,13 @@ def_var
     { return new AST.DefineVariable(eternal !== null, type, name, length !== null ? length[1] : null, init_value[2]); }
 
 expression
-  = term:term0
+  = left:lh_expression rest:(_ "=" _ term0)+
+    { return binary_op(left, rest); }
+  / term:term0
+
+lh_expression
+  = id:identifier index:(_ "[" _ expression _ "]" _)?
+    { return new AST.LHExpression(id, index, location()); }
 
 term0
   = left:term1 rest:(_ "||" _ term1)+

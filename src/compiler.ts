@@ -21,6 +21,11 @@ export class Compiler implements ASTVisitor<void> {
     node.initialValue.accept(this)
     this.addOperation(new op.Store(node.name))
   }
+  visitAssign(node: AST.Assign): void {
+    // TODO: node.left.indexに対応
+    node.right.accept(this)
+    this.addOperation(new op.Store(node.left.name))
+  }
   visitBinaryOp(node: AST.BinaryOp): void {
     node.left.accept(this)
     node.right.accept(this)

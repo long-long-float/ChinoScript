@@ -47,6 +47,20 @@ export abstract class Expression extends ASTNode {
   abstract accept<T>(visitor: ASTVisitor<T>): T
 }
 
+export class LHExpression extends ASTNode {
+  constructor(
+    public name: Identifier,
+    public index: Expression,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T | null {
+    return null
+  }
+}
+
 export class BinaryOp extends Expression {
   constructor(
     public left: Expression,
@@ -59,6 +73,20 @@ export class BinaryOp extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitBinaryOp(this)
+  }
+}
+
+export class Assign extends Expression {
+  constructor(
+    public left: LHExpression,
+    public right: Expression,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitAssign(this)
   }
 }
 

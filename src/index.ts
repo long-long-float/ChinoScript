@@ -12,8 +12,8 @@ export function evaluate(code: string, debug = false): Value.Value {
   const ops = compile(ast)
 
   if (debug) {
-    console.log(util.inspect(ops, false, null))
     console.log(util.inspect(ast, false, null))
+    console.log(util.inspect(ops, false, null))
   }
 
   return run(ops)
