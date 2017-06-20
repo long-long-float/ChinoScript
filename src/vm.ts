@@ -1,17 +1,18 @@
 import * as op from './operation'
 import * as Value from './value'
 import { FunctionTable } from './compiler'
+import { Stack } from './stack'
 
 type Environment = { [name: string]: Value.Value }
 
 export class VirtualMachine {
-  private stack: Value.Value[] = []
-  private env: Environment = {}
+  private stack = new Stack<Value.Value>()
+  private envStack = new Stack<Environment>()
 
   // for JumpXXX
   private labelTable: { [id: number]: number } = {}
 
-  private pcStack: [number, string][] = []
+  private pcStack = new Stack<[number, string]>()
 
   private table: any
 
@@ -22,6 +23,7 @@ export class VirtualMachine {
           const value = this.stack.pop()
           console.log(value)
         } else {
+          this.envStack.push({})
           this.pcStack.push([0, operation.name.value])
         }
       },
@@ -30,10 +32,10 @@ export class VirtualMachine {
       },
       Store: (operation: op.Store) => {
         const value = this.stack.pop()
-        this.env[operation.id.value] = value
+        this.envStack.top()[operation.id.value] = value
       },
       Load: (operation: op.Load) => {
-        this.stack.push(this.env[operation.id.value])
+        this.stack.push(this.envStack.top()[operation.id.value])
       },
       IArith: (operation: op.IArith) => {
         const right = this.stack.pop()
@@ -65,31 +67,24 @@ export class VirtualMachine {
         this.stack.push(result)
       },
       Jump: (operation: op.Jump) => {
-        this.topOfPCStack()[0] = this.labelTable[operation.destination]
+        this.pcStack.top()[0] = this.labelTable[operation.destination]
       },
       JumpUnless: (operation: op.JumpUnless) => {
         const cond = this.stack.pop()
         // TODO: condの型を決定させる
         if (cond !== true) {
-          this.topOfPCStack()[0] = this.labelTable[operation.destination]
+          this.pcStack.top()[0] = this.labelTable[operation.destination]
         }
       },
       Ret: (operation: op.Ret) => {
+        this.envStack.pop()
         this.pcStack.pop()
       },
       Label: (operation: op.Label) => {},
     }
   }
 
-  topOfStack(): Value.Value {
-    return this.stack[this.stack.length - 1]
-  }
-
-  topOfPCStack(): [number, string] {
-    return this.pcStack[this.pcStack.length - 1]
-  }
-
-  run(functions: FunctionTable) {
+  run(functions: FunctionTable): Value.Value {
     this.labelTable = {}
     Object.keys(functions).forEach((funName) => {
       functions[funName].forEach((operation, i) => {
@@ -99,9 +94,11 @@ export class VirtualMachine {
       })
     })
 
+    this.envStack.push({})
+
     this.pcStack.push([0, '$main'])
     while (true) {
-      const pc = this.topOfPCStack()
+      const pc = this.pcStack.top()
       if (pc[0] >= functions[pc[1]].length) {
         break
       }
@@ -111,11 +108,13 @@ export class VirtualMachine {
       if (f === undefined) {
         throw new Error(`unknown operation ${operation.constructor.name}`)
       } else {
-        console.log(`${pc[0]}@${pc[1]} ${operation.constructor.name}`)
+        // console.log(`${pc[0]}@${pc[1]} ${operation.constructor.name}`)
         f(operation)
       }
 
       pc[0]++
     }
+
+    return this.stack.top()
   }
 }

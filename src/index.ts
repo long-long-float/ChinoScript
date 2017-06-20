@@ -36,6 +36,5 @@ export function compile(ast: AST.ASTNode[]): FunctionTable {
 
 export function run(operations: FunctionTable): Value.Value {
   const vm = new VirtualMachine()
-  vm.run(operations)
-  return vm.topOfStack()
+  return vm.run(operations)
 }
