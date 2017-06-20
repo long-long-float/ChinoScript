@@ -37,6 +37,49 @@ export class DefineVariable extends Statement {
   }
 }
 
+export class ReturnStatement extends Statement {
+  constructor(
+    public value: Expression
+  ) {
+    super(value.location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitReturnStatement(this)
+  }
+}
+
+export class FunctionDefinition extends Statement {
+  constructor(
+    public outputType: Type,
+    public name: Identifier,
+    public genericTypes: Identifier[],
+    public args: ArgumentDefinition[],
+    public body: Block,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitFunctionDefinition(this)
+  }
+}
+
+export class ArgumentDefinition extends ASTNode {
+  constructor(
+    public type: Type,
+    public name: Identifier,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T | null {
+    return null
+  }
+}
+
 export abstract class Expression extends ASTNode {
   constructor(
     location: parser.Location

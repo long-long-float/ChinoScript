@@ -87,15 +87,35 @@ program
 
 top_statement
   = statement _ comment?
+  / def_fun
   / comment
+
+def_fun
+  = type:type _ name:identifier _ generic_types:( "<" identifier _ :("," _ identifier _)* ">" )? _
+    "(" _  fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")" _ block:block
+    {
+      const gt = filter(flatten(generic_types || []))
+      gt.shift()
+      gt.pop()
+      return new AST.FunctionDefinition(type, name, gt, args(fst_arg, rest_args), block, location());
+    }
+
+def_arg
+  = type:type _ name:identifier
+    { return new AST.ArgumentDefinition(type, name, location()); }
 
 statement
   = expr:expression _ ";" { return expr }
   / def_var
+  / return_stmt
 
 def_var
   = eternal:"eternal"? _ type:type _ name:identifier _ length:("[" integer "]")? _ init_value:("=" _  expression) _ ";"
     { return new AST.DefineVariable(eternal !== null, type, name, length !== null ? length[1] : null, init_value[2]); }
+
+return_stmt
+  = "return" _ value:expression? _ ";"
+    { return new AST.ReturnStatement(value); }
 
 expression
   = left:lh_expression rest:(_ "=" _ term0)+

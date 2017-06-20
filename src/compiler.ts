@@ -22,6 +22,12 @@ export class Compiler implements ASTVisitor<void> {
     node.initialValue.accept(this)
     this.addOperation(new op.Store(node.name))
   }
+  visitReturnStatement(node: AST.ReturnStatement): void {
+    throw new Error("Method not implemented.");
+  }
+  visitFunctionDefinition(node: AST.FunctionDefinition): void {
+    throw new Error("Method not implemented.");
+  }
   visitAssign(node: AST.Assign): void {
     // TODO: node.left.indexに対応
     node.right.accept(this)
