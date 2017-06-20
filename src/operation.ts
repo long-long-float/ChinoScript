@@ -75,6 +75,12 @@ export class JumpUnless extends Operation {
   }
 }
 
+export class Ret extends Operation {
+  constructor() {
+    super()
+  }
+}
+
 export class Label extends Operation {
   constructor(
     public id: number

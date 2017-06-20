@@ -1,5 +1,6 @@
 import * as op from './operation'
 import * as Value from './value'
+import { FunctionTable } from './compiler'
 
 type Environment = { [name: string]: Value.Value }
 
@@ -10,15 +11,19 @@ export class VirtualMachine {
   // for JumpXXX
   private labelTable: { [id: number]: number } = {}
 
-  private pc: number
+  private pcStack: [number, string][] = []
 
   private table: any
 
   constructor() {
     this.table = {
       CallFunction: (operation: op.CallFunction) => {
-        const value = this.stack.pop()
-        console.log(value)
+        if (operation.name.value === 'puts') {
+          const value = this.stack.pop()
+          console.log(value)
+        } else {
+          this.pcStack.push([0, operation.name.value])
+        }
       },
       Push: (operation: op.Push) => {
         this.stack.push(operation.value)
@@ -60,14 +65,17 @@ export class VirtualMachine {
         this.stack.push(result)
       },
       Jump: (operation: op.Jump) => {
-        this.pc = this.labelTable[operation.destination]
+        this.topOfPCStack()[0] = this.labelTable[operation.destination]
       },
       JumpUnless: (operation: op.JumpUnless) => {
         const cond = this.stack.pop()
         // TODO: condの型を決定させる
         if (cond !== true) {
-          this.pc = this.labelTable[operation.destination]
+          this.topOfPCStack()[0] = this.labelTable[operation.destination]
         }
+      },
+      Ret: (operation: op.Ret) => {
+        this.pcStack.pop()
       },
       Label: (operation: op.Label) => {},
     }
@@ -77,23 +85,37 @@ export class VirtualMachine {
     return this.stack[this.stack.length - 1]
   }
 
-  run(operations: op.Operation[]) {
+  topOfPCStack(): [number, string] {
+    return this.pcStack[this.pcStack.length - 1]
+  }
+
+  run(functions: FunctionTable) {
     this.labelTable = {}
-    operations.forEach((operation, i) => {
-      if (operation instanceof op.Label) {
-        this.labelTable[operation.id] = i
-      }
+    Object.keys(functions).forEach((funName) => {
+      functions[funName].forEach((operation, i) => {
+        if (operation instanceof op.Label) {
+          this.labelTable[operation.id] = i
+        }
+      })
     })
 
-    for (this.pc = 0; this.pc < operations.length; this.pc++) {
-      const operation = operations[this.pc]
+    this.pcStack.push([0, '$main'])
+    while (true) {
+      const pc = this.topOfPCStack()
+      if (pc[0] >= functions[pc[1]].length) {
+        break
+      }
+      const operation = functions[pc[1]][pc[0]]
 
       const f = this.table[operation.constructor.name]
       if (f === undefined) {
         throw new Error(`unknown operation ${operation.constructor.name}`)
       } else {
+        console.log(`${pc[0]}@${pc[1]} ${operation.constructor.name}`)
         f(operation)
       }
+
+      pc[0]++
     }
   }
 }

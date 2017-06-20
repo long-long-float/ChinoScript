@@ -2,19 +2,26 @@ import { ASTVisitor } from './ast-visitor'
 import * as AST from './ast'
 import * as op from './operation'
 
+export type FunctionTable = { [name: string]: op.Operation[] }
+
 export class Compiler implements ASTVisitor<void> {
-  private _operations: op.Operation[] = []
   private labelCounter = 0
+
+  private functions: FunctionTable = { '$main': [] }
+  private currentFunctionName: string = '$main'
 
   constructor() {
   }
 
-  get operations(): op.Operation[] {
-    return this._operations
+  compile(ast: AST.ASTNode[]): FunctionTable {
+    ast.forEach((stmt) => {
+      stmt.accept(this)
+    })
+    return this.functions
   }
 
   addOperation(op: op.Operation): void {
-    this._operations.push(op)
+    this.functions[this.currentFunctionName].push(op)
   }
 
   visitDefineVariable(node: AST.DefineVariable): void {
@@ -23,10 +30,20 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Store(node.name))
   }
   visitReturnStatement(node: AST.ReturnStatement): void {
-    throw new Error("Method not implemented.");
+    node.value.accept(this)
+    this.addOperation(new op.Ret())
   }
   visitFunctionDefinition(node: AST.FunctionDefinition): void {
-    throw new Error("Method not implemented.");
+    const prevName = this.currentFunctionName
+    this.currentFunctionName = node.name.value
+    this.functions[this.currentFunctionName] = []
+
+    node.args.forEach((arg) => {
+      this.addOperation(new op.Store(arg.name))
+    })
+    node.body.accept(this)
+
+    this.currentFunctionName = prevName
   }
   visitAssign(node: AST.Assign): void {
     // TODO: node.left.indexに対応
