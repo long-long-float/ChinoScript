@@ -5,4 +5,8 @@ export class Type {
     public name: string,
     public innerTypes: Type[]
   ) {}
+
+  toString(): string {
+    return `${this.name}<${this.innerTypes.join(', ')}>`
+  }
 }

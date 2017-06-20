@@ -14,6 +14,20 @@ describe('ChinoScript', function() {
       })
   })
 
+  describe('type check', function() {
+    it('should throw type error', function() {
+      const assertThrowTypeError = (code: string) => {
+        assert.throw(() => ChinoScript.evaluate(code), ChinoScript.exceptions.TypeError)
+      }
+
+      assertThrowTypeError('int a = "str";')
+      assertThrowTypeError('int a = 2; a = "str";')
+      assertThrowTypeError('int a = 1; if(a) { 1 } else { 2 };')
+      assertThrowTypeError('int f(int x) { return x * 2; } f("str");')
+      assertThrowTypeError('int f(int x) { return x * 2; } string str = f(1);')
+    })
+  })
+
   describe('arithmetic operations', function() {
     it('should return collect value', function () {
       const e = (code: string) => ChinoScript.evaluate(code)
@@ -41,11 +55,11 @@ describe('ChinoScript', function() {
   describe('functions', function() {
     it('should return collect value from defined function', function() {
       const result = ChinoScript.evaluate(`int fact(int n) {
-  if (n < 2) { return n; }
-  else { return fact(n - 1) * n; };
-}
+          if (n < 2) { return n; }
+          else { return fact(n - 1) * n; };
+        }
 
-fact(10);`)
+        fact(10);`)
       assert.equal(result, 3628800)
     })
   })

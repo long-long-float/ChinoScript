@@ -2,10 +2,13 @@ import * as parser from './parser.js'
 import * as AST from './ast'
 import { Compiler, FunctionTable } from './compiler'
 import * as op from './operation'
-import { VirtualMachine } from "./vm"
+import { VirtualMachine } from './vm'
 import * as Value from './value'
+import * as Exceptions from './exception'
 
 import * as util from 'util'
+
+export const exceptions = Exceptions
 
 export function evaluate(code: string, debug = false): Value.Value {
   const ast = parse(code)
