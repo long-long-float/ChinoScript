@@ -4,16 +4,18 @@ import * as fs from 'fs'
 import * as ChinoScript from '../src/index'
 
 describe('ChinoScript', function() {
-  fs.readdirSync('./examples')
-    .forEach((path) => {
-      it(`should work examples/${path}`, function() {
-        const code = fs.readFileSync(`examples/${path}`).toString()
-        assert.doesNotThrow(() => ChinoScript.evaluate(code))
+  describe('examples', function() {
+    fs.readdirSync('./examples')
+      .forEach((path) => {
+        it(`should work examples/${path}`, function() {
+          const code = fs.readFileSync(`examples/${path}`).toString()
+          assert.doesNotThrow(() => ChinoScript.evaluate(code))
+        })
       })
-    })
+  })
 
   describe('arithmetic operations', function() {
-    it('shuld return collect value', function () {
+    it('should return collect value', function () {
       const e = (code: string) => ChinoScript.evaluate(code)
 
       assert.equal(e('1 + 1;'), 2)
@@ -25,6 +27,26 @@ describe('ChinoScript', function() {
       assert.equal(e('1 + 2 + 3;'), 6)
       assert.equal(e('1 + 2 * 3 + 4;'), 11)
       assert.equal(e('(1 + 2) * (3 + 4);'), 21)
+    })
+  })
+
+  describe('if expr', function() {
+    it('should return collect value', function() {
+      const e = (code: string) => ChinoScript.evaluate(code)
+      assert.equal(e('if(1 == 1) { "OK"; } else { "NG"; };'), 'OK')
+      assert.equal(e('if(1 != 1) { "NG"; } else { "OK"; };'), 'OK')
+    })
+  })
+
+  describe('functions', function() {
+    it('should return collect value from defined function', function() {
+      const result = ChinoScript.evaluate(`int fact(int n) {
+  if (n < 2) { return n; }
+  else { return fact(n - 1) * n; };
+}
+
+fact(10);`)
+      assert.equal(result, 3628800)
     })
   })
 

@@ -179,8 +179,8 @@ integer
     { return new AST.IntegerLiteral(parseInt(text(), 10), location()); }
 
 if_expr
-  = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
-    { return new AST.IfExpression(cond, iftrue, iffalse !== null ? iffalse[3] : null); }
+  = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)
+    { return new AST.IfExpression(cond, iftrue, iffalse[3]); }
 
 block
   = "{" _ comment? _ stmts:(statement _ comment? / comment) * _ "}"
