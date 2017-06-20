@@ -1,5 +1,5 @@
-int a = 10;
+string a = "Hello";
 puts(a);
 
-a = 20;
+a = "World";
 puts(a);

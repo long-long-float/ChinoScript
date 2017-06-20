@@ -1,0 +1,27 @@
+import { Identifier } from './ast'
+
+export class Type {
+  constructor(
+    public name: string,
+    public innerTypes: Type[]
+  ) {}
+
+  toString(): string {
+    if (this.innerTypes.length === 0) {
+      return this.name
+    } else {
+      return `${this.name}<${this.innerTypes.join(', ')}>`
+    }
+  }
+
+  equals(that: Type): boolean {
+    return this.name === that.name &&
+           this.innerTypes.length === that.innerTypes.length &&
+           this.innerTypes.every((type, i) => type.equals(that.innerTypes[i]))
+
+  }
+
+  is(name: string): boolean {
+    return this.name === name
+  }
+}

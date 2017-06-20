@@ -1,10 +1,10 @@
 {
   const AST = require('./ast.js')
-  const Types = require('./types.js')
+  const Types = require('./type.js')
 
   const RESERVED_WORDS = ["return", "int", "string", "char", "void", "for", "while", "if"];
 
-  function binary_op(left, rest) {
+  function binary_op(left, rest, type) {
     left = flatten([left]);
     rest = filter(flatten(rest), [" "]);
 
@@ -39,7 +39,7 @@
   function type(id, ary) {
     // FIXME: どうにかしたい
     const typeTable = {
-      'int': 'Integer', 'bool': 'Boolean', 'char': 'Char'
+      'int': 'Integer', 'bool': 'Boolean', 'char': 'Char', 'string': 'String'
     };
 
     const typeName = typeTable.hasOwnProperty(id.value) ?
@@ -49,10 +49,8 @@
       return new Types.Type('Array', [new Types.Type(typeName)]);
     } else if (id.value === 'void') {
       return new Types.Type('Tuple', []);
-    } else if (id.value === 'string') {
-      return new Types.Type('Array', [new Types.Type('Char')]);
     } else {
-      return new Types.Type(typeName);
+      return new Types.Type(typeName, []);
     }
   }
 

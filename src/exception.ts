@@ -1,10 +1,14 @@
-import { Type } from './types'
+import { Type } from './type'
 
 export class TypeError extends Error {
   constructor(
-    expect: Type,
-    actual: Type
+    message: string
   ) {
-    super(`expected '${expect.toString()}', but '${actual.toString()}'`)
+    super(message)
   }
+
+  static fromTypes(expect: Type, actual: Type): TypeError {
+    return new TypeError(`expected '${expect.toString()}', but '${actual.toString()}' given`)
+  }
+
 }

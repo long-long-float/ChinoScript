@@ -1,4 +1,4 @@
-import { Type } from './types'
+import { Type } from './type'
 import { parser } from './parser.d'
 import { ASTVisitor } from './ast-visitor'
 
@@ -104,6 +104,10 @@ export class LHExpression extends ASTNode {
   }
 }
 
+export enum BinaryOpType {
+  Arith, Pred, Logic, Unknown
+}
+
 export class BinaryOp extends Expression {
   constructor(
     public left: Expression,
@@ -116,6 +120,29 @@ export class BinaryOp extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitBinaryOp(this)
+  }
+
+  get type(): BinaryOpType {
+    switch (this.op) {
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+      case '%':
+        return BinaryOpType.Arith
+      case '<=':
+      case '>=':
+      case '<':
+      case '>':
+      case '==':
+      case '!=':
+        return BinaryOpType.Pred
+      case '||':
+      case '&&':
+        return BinaryOpType.Logic
+      default:
+        return BinaryOpType.Unknown
+    }
   }
 }
 
