@@ -17,14 +17,20 @@ describe('ChinoScript', function() {
   describe('type check', function() {
     it('should throw type error', function() {
       const assertThrowTypeError = (code: string) => {
-        assert.throw(() => ChinoScript.evaluate(code), ChinoScript.exceptions.TypeError)
+        assert.throw(() => ChinoScript.evaluate(code))
       }
 
       assertThrowTypeError('int a = "str";')
       assertThrowTypeError('int a = 2; a = "str";')
-      assertThrowTypeError('int a = 1; if(a) { 1 } else { 2 };')
+      assertThrowTypeError('int a = 1; if(a) { 1; } else { 2; };')
+      assertThrowTypeError('int a = 1; if(a == 0) { 1; } else { "a"; };')
       assertThrowTypeError('int f(int x) { return x * 2; } f("str");')
+      assertThrowTypeError('int f(string x) { return x * 2; } f("str");')
       assertThrowTypeError('int f(int x) { return x * 2; } string str = f(1);')
+
+      assertThrowTypeError('1 + "a";')
+      assertThrowTypeError('1 || 2;')
+      assertThrowTypeError('1 == "a";')
     })
   })
 

@@ -6,6 +6,7 @@ import { Stack } from './stack'
 
 export class TypeChecker implements ASTVisitor<Type> {
   varTableStack = new Stack<{ [name: string]: Type }>()
+  functions: { [name: string]: AST.FunctionDefinition } = {}
 
   check(ast: AST.ASTNode[]) {
     this.varTableStack.push({})
@@ -15,30 +16,39 @@ export class TypeChecker implements ASTVisitor<Type> {
   visitDefineVariable(node: AST.DefineVariable): Type {
     // TODO: 2重に定義していないかのチェック
     this.varTableStack.top()[node.name.value] = node.type
+    const initType = node.initialValue.accept(this)
+    this.checkSatisfied(node.type, initType)
     return new Type('Tuple', [])
   }
   visitReturnStatement(node: AST.ReturnStatement): Type {
-    throw new Error("Method not implemented.");
+    // TODO: 関数の最後以外のreturnにも対応
+    return node.value.accept(this)
   }
   visitFunctionDefinition(node: AST.FunctionDefinition): Type {
+    this.functions[node.name.value] = node
+
     this.varTableStack.push({})
-    throw new Error("Method not implemented.");
+
+    node.args.forEach((arg) => this.varTableStack.top()[arg.name.value] = arg.type)
+    const resultType = node.body.accept(this)
+
+    this.varTableStack.pop()
+
+    this.checkSatisfied(node.outputType, resultType)
+
+    return resultType
   }
   visitAssign(node: AST.Assign): Type {
     const leftType = this.varTableStack.top()[node.left.name.value]
     const rightType = node.right.accept(this)
-    if (!leftType.equals(rightType)) {
-      throw TypeError.fromTypes(leftType, rightType)
-    }
+    this.checkSatisfied(leftType, rightType)
     return leftType
   }
   visitBinaryOp(node: AST.BinaryOp): Type {
     const leftType = node.left.accept(this)
     const rightType = node.right.accept(this)
 
-    if (!leftType.equals(rightType)) {
-      throw new TypeError(`type mismatch (${leftType.name} and ${rightType.name})`)
-    }
+    this.checkEquals(leftType, rightType)
 
     let expectedType: Type
     if (node.type === AST.BinaryOpType.Logic) {
@@ -47,9 +57,7 @@ export class TypeChecker implements ASTVisitor<Type> {
       // TODO: ==, !=はInteger以外も通すようにする
       expectedType = new Type('Integer', [])
     }
-    if (!expectedType.equals(leftType)) {
-      throw TypeError.fromTypes(expectedType, leftType)
-    }
+    this.checkSatisfied(expectedType, leftType)
 
     let resultType: Type
     if (node.type === AST.BinaryOpType.Arith) {
@@ -64,12 +72,21 @@ export class TypeChecker implements ASTVisitor<Type> {
     throw new Error("Method not implemented.");
   }
   visitCallFunction(node: AST.CallFunction): Type {
-    const argType = node.args[0].accept(this)
-    const putsArgType = new Type('String', [])
-    if (!argType.equals(putsArgType)) {
-      throw TypeError.fromTypes(putsArgType, argType)
+    if (node.name.value === 'puts') {
+      // TODO: check
+      node.args[0].accept(this)
+      return new Type('Tuple', [])
+    } else {
+      const target = this.functions[node.name.value]
+      if (target.args.length !== node.args.length) {
+        throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.args.length})`)
+      }
+      target.args.forEach((arg, i) => {
+        const a = node.args[i].accept(this)
+        this.checkSatisfied(arg.type, a)
+      })
+      return target.outputType
     }
-    return new Type('Tuple', [])
   }
   visitReferenceVariable(node: AST.ReferenceVariable): Type {
     // TODO: 存在チェック
@@ -78,14 +95,10 @@ export class TypeChecker implements ASTVisitor<Type> {
   visitIfExpression(node: AST.IfExpression): Type {
     const condType = node.condition.accept(this)
     const thenType = node.thenBlock.accept(this)
-    const elseType = node.thenBlock.accept(this)
+    const elseType = node.elseBlock.accept(this)
 
-    if (!condType.is('Boolean')) {
-      throw TypeError.fromTypes(new Type('Boolean', []), condType)
-    }
-    if (!thenType.equals(elseType)) {
-      throw new TypeError(`type mismatch (${thenType.name} and ${elseType.name})`)
-    }
+    this.checkSatisfied(new Type('Boolean', []), condType)
+    this.checkEquals(thenType, elseType)
 
     return thenType
   }
@@ -101,6 +114,18 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitIdentifier(node: AST.Identifier): Type {
     throw new Error("Method not implemented.");
+  }
+
+  private checkSatisfied(expected: Type, actual: Type) {
+    if (!expected.equals(actual)) {
+      throw TypeError.fromTypes(expected, actual)
+    }
+  }
+
+  private checkEquals(x: Type, y: Type) {
+    if (!x.equals(y)) {
+      throw new TypeError(`type mismatch (${x.name} and ${y.name})`)
+    }
   }
 
 }

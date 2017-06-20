@@ -6,6 +6,10 @@ export class Type {
     public innerTypes: Type[]
   ) {}
 
+  static fromFunction(resultType: Type, argTypes: Type[]): Type {
+    return new Type('Function', argTypes.concat([resultType]))
+  }
+
   toString(): string {
     if (this.innerTypes.length === 0) {
       return this.name

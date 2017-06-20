@@ -12,4 +12,8 @@ export class Stack<T> {
   top(): T {
     return this.values[this.values.length - 1]
   }
+
+  bottom(): T {
+    return this.values[0]
+  }
 }
