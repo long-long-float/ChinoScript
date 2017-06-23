@@ -93,6 +93,9 @@ export class Compiler implements ASTVisitor<void> {
   visitStringLiteral(node: AST.StringLiteral): void {
     this.addOperation(new op.Push(node.value))
   }
+  visitArrayLiteral(node: AST.ArrayLiteral): void {
+    throw new Error("Method not implemented.");
+  }
   visitBlock(node: AST.Block): void {
     node.statemetns.forEach((stmt) => stmt.accept(this))
   }

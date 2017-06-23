@@ -12,6 +12,7 @@ export interface ASTVisitor<T> {
   visitIfExpression(node: AST.IfExpression): T
   visitIntegerLiteral(node: AST.IntegerLiteral): T
   visitStringLiteral(node: AST.StringLiteral): T
+  visitArrayLiteral(node: AST.ArrayLiteral): T
   visitBlock(node: AST.Block): T
   visitIdentifier(node: AST.Identifier): T
 }

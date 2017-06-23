@@ -97,7 +97,7 @@ export abstract class Expression extends ASTNode {
 export class LHExpression extends ASTNode {
   constructor(
     public name: Identifier,
-    public index: Expression,
+    public index: Expression | null,
     location: parser.Location
   ) {
     super(location)
@@ -240,6 +240,20 @@ export class StringLiteral extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitStringLiteral(this)
+  }
+}
+
+export class ArrayLiteral extends Expression {
+  constructor(
+    public type: Type,
+    public values: Expression[],
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitArrayLiteral(this)
   }
 }
 

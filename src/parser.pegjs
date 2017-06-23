@@ -46,7 +46,7 @@
       typeTable[id.value] : id.value;
 
     if (ary.length > 0) {
-      return new Types.Type('Array', [new Types.Type(typeName)]);
+      return new Types.Type('Array', [new Types.Type(typeName, [])]);
     } else if (id.value === 'void') {
       return new Types.Type('Tuple', []);
     } else {
@@ -122,7 +122,7 @@ expression
 
 lh_expression
   = id:identifier index:(_ "[" _ expression _ "]" _)?
-    { return new AST.LHExpression(id, index, location()); }
+    { return new AST.LHExpression(id, index ? index[3] : null, location()); }
 
 term0
   = left:term1 rest:(_ "||" _ term1)+
@@ -164,7 +164,7 @@ factor
   / boolean */
   / id:identifier index:(_ "[" _ expression _ "]" _)?
     { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
-  /// array
+  / array
 
 string
   // TODO: エスケープ周りを修正
@@ -179,6 +179,15 @@ integer
 if_expr
   = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)
     { return new AST.IfExpression(cond, iftrue, iffalse[3]); }
+
+array
+  = type:array_type _ "{" _ fst_value:expression? values:(_ "," _ expression)* _ "}"
+    {
+      return new AST.ArrayLiteral(type,
+        fst_value ?
+          [fst_value].concat(values.map(function(value) { return value[3]; })) :
+          []);
+    }
 
 block
   = "{" _ comment? _ stmts:(statement _ comment? / comment) * _ "}"
@@ -195,9 +204,14 @@ type
     & { return ["return"].indexOf(id.value) === -1; }
     { return type(id, ary); }
 
+array_type
+  = id:type_identifier ary:(_ "[" "]")+
+    & { return ["return"].indexOf(id.value) === -1; }
+    { return type(id, ary); }
+
 identifier
   = content:([a-zA-Z_][a-zA-Z_0-9]*)
-    & { return RESERVED_WORDS.indexOf(text()) === -1; }
+    & { return RESERVED_WORDS.indexOf(flatten(content).join("")) === -1; }
     { return new AST.Identifier(text(), location()); }
 
 type_identifier

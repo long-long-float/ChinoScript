@@ -1,0 +1,5 @@
+let ary1 = int[]{1, 2, 3};
+let ary2 = int[]{};
+
+ary1[0] = 2;
+// ary1[114514] = 2; // out of range error

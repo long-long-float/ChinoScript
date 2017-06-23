@@ -14,15 +14,17 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
 
   visitDefineVariable(node: AST.DefineVariable): Type {
-    // TODO: 2重に定義していないかのチェック
-    this.varTableStack.top()[node.name.value] = node.type
     const initType = node.initialValue.accept(this)
-    if (node.usingTypeInference()) {
-      return initType
-    } else {
-      this.checkSatisfied(node.type, initType)
-      return new Type('Tuple', [])
+    const variableType = node.usingTypeInference() ? initType : node.type
+
+    // TODO: 2重に定義していないかのチェック
+    this.varTableStack.top()[node.name.value] = variableType
+
+    if (!node.usingTypeInference()) {
+      this.checkSatisfied(variableType, initType)
     }
+
+    return new Type('Tuple', [])
   }
   visitReturnStatement(node: AST.ReturnStatement): Type {
     // TODO: 関数の最後以外のreturnにも対応
@@ -45,7 +47,13 @@ export class TypeChecker implements ASTVisitor<Type> {
   visitAssign(node: AST.Assign): Type {
     const leftType = this.varTableStack.top()[node.left.name.value]
     const rightType = node.right.accept(this)
-    this.checkSatisfied(leftType, rightType)
+
+    if (node.left.index !== null) {
+      this.checkSatisfied(new Type('Array', []), leftType, true)
+      this.checkSatisfied(leftType.innerTypes[0], rightType)
+    } else {
+      this.checkSatisfied(leftType, rightType)
+    }
     return leftType
   }
   visitBinaryOp(node: AST.BinaryOp): Type {
@@ -112,6 +120,12 @@ export class TypeChecker implements ASTVisitor<Type> {
   visitStringLiteral(node: AST.StringLiteral): Type {
     return new Type('String', [])
   }
+  visitArrayLiteral(node: AST.ArrayLiteral): Type {
+    node.values.forEach((value) => {
+      this.checkSatisfied(node.type.innerTypes[0], value.accept(this))
+    })
+    return node.type
+  }
   visitBlock(node: AST.Block): Type {
     node.statemetns.forEach((stmt) => stmt.accept(this))
     return node.statemetns[node.statemetns.length - 1].accept(this)
@@ -120,8 +134,9 @@ export class TypeChecker implements ASTVisitor<Type> {
     throw new Error("Method not implemented.");
   }
 
-  private checkSatisfied(expected: Type, actual: Type) {
-    if (!expected.equals(actual)) {
+  private checkSatisfied(expected: Type, actual: Type, shallow = false) {
+    const equal = shallow ? expected.name === actual.name : expected.equals(actual)
+    if (!equal) {
       throw TypeError.fromTypes(expected, actual)
     }
   }

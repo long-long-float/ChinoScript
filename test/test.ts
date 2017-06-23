@@ -23,6 +23,11 @@ describe('ChinoScript', function() {
       assertThrowTypeError('int a = "str";')
       assertThrowTypeError('int a = 2; a = "str";')
       assertThrowTypeError('let a = 2; a = "str";')
+
+      assertThrowTypeError('let a = int[]{1, 2, 3}; a[0] = "str";')
+      assertThrowTypeError('let a = int[]{1, 2, 3}; a = "str";')
+      assertThrowTypeError('let a = 1; a[0] = 0;')
+
       assertThrowTypeError('int a = 1; if(a) { 1; } else { 2; };')
       assertThrowTypeError('int a = 1; if(a == 0) { 1; } else { "a"; };')
 
