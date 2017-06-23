@@ -3,3 +3,6 @@ puts(a);
 
 a = "World";
 puts(a);
+
+let b = 10;
+// b = "str"; // type error

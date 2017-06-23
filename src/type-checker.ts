@@ -17,8 +17,12 @@ export class TypeChecker implements ASTVisitor<Type> {
     // TODO: 2重に定義していないかのチェック
     this.varTableStack.top()[node.name.value] = node.type
     const initType = node.initialValue.accept(this)
-    this.checkSatisfied(node.type, initType)
-    return new Type('Tuple', [])
+    if (node.usingTypeInference()) {
+      return initType
+    } else {
+      this.checkSatisfied(node.type, initType)
+      return new Type('Tuple', [])
+    }
   }
   visitReturnStatement(node: AST.ReturnStatement): Type {
     // TODO: 関数の最後以外のreturnにも対応

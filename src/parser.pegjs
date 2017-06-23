@@ -2,7 +2,7 @@
   const AST = require('./ast.js')
   const Types = require('./type.js')
 
-  const RESERVED_WORDS = ["return", "int", "string", "char", "void", "for", "while", "if"];
+  const RESERVED_WORDS = ["return", "int", "string", "char", "void", "for", "while", "if", "let"];
 
   function binary_op(left, rest, type) {
     left = flatten([left]);

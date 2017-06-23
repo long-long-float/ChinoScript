@@ -32,6 +32,10 @@ export class DefineVariable extends Statement {
     super(location)
   }
 
+  usingTypeInference(): boolean {
+    return this.type.name === 'let'
+  }
+
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitDefineVariable(this)
   }
