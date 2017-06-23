@@ -1,0 +1,110 @@
+scene(opening) {
+  startButton = Button(width / 2, height / 2, "button.png")
+
+  update {
+    if (startButton.clicked?) {
+      goto(game)
+    }
+  }
+
+  draw {
+    startButton
+  }
+}
+
+type Bullet < Sprite {
+  int @dx, @dy
+}
+type Enemy < Sprite {
+  int @hp
+}
+type Player < Sprite
+
+scene(game) {
+  enemyBullets = Bullet[]
+  enemies = Enemy[]
+  playerBullets = Bullet[]
+  player  = Player(width / 2, height * 3 / 2)
+
+  update {
+    if (time % 2sec == 0) {
+      enemies.push(Enemy(rand() * width, 0, 3))
+    }
+
+    enemyBullets, playerBullets {
+      x += dx
+      y += dy
+    }
+    enemies {
+      if (age % 1sec == 0) {
+        enemyBullets.push(Bullet(x, y, 0, 10))
+      }
+      y += 3
+    }
+    player {
+      dx, dy = input.move
+      x += dx
+      y += dy
+
+      if (input.A.keep? && time % 500msec == 0) {
+        playerBullets.push(Bullet(x, y, 0, -10))
+      }
+    }
+  }
+
+  collision {
+    hit(
+      enemyBullets -> player,
+      enemy -> player
+    ) {
+      player.anime(explosion).then {
+        goto(gameover)
+      }
+    }
+
+    hit(
+      playerBullets -> enemies,
+    ) { |enemy|
+      enemy.hp--
+      if (enemy.hp <= 0) {
+        enemy.anime(explosion).then {
+          enemies.remove(enemy)
+        }
+      }
+    }
+  }
+
+  draw {
+    enemies
+    player
+    enemyBullets
+    playerBullets
+  }
+}
+
+scene(clear, int score) {
+  update {
+    if (input.A.down) {
+      goto(opening)
+    }
+  }
+
+  draw {
+    text("Clear"
+         "score: #{score}"
+         "press A", width / 2, height / 2)
+  }
+}
+
+scene(gameover) {
+  update {
+    if (input.A.down) {
+      goto(opening)
+    }
+  }
+
+  draw {
+    text("GameOver"
+         "press A", width / 2, height / 2)
+  }
+}

@@ -1,0 +1,39 @@
+class Bird < Sprite {}
+class Wall < Rect {}
+
+loop {
+  text "Start"
+
+  // 与えられた条件が満たされてたら復帰
+  yield { input.A.down? }
+
+  const bird = Bird(width * 20%, height * 50%, "bird.png")
+  const walls = Wall[]
+
+  let score = 0
+
+  loop {
+    if (time % 2sec == 0) {
+      const h = rand() * height * 80%
+      walls.push(Wall(width, h, 20, height - h))
+    }
+
+    walls@x -= 1
+
+    hit(bird, walls) { |bird, wall|
+      break
+    }
+
+    score += 1
+
+    draw bird
+    draw walls
+
+    // 条件が与えられない場合はフレームごとに呼ばれる
+    yield
+  }
+
+  text "Score #{score}"
+
+  yield { input.A.down? }
+}
