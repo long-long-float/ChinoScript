@@ -9,6 +9,8 @@ export class VirtualMachine {
   private stack = new Stack<Value.Value>()
   private envStack = new Stack<Environment>()
 
+  private functions: FunctionTable
+
   // for JumpXXX
   private labelTable: { [id: number]: number } = {}
 
@@ -19,12 +21,15 @@ export class VirtualMachine {
   constructor() {
     this.table = {
       CallFunction: (operation: op.CallFunction) => {
-        if (operation.name.value === 'puts') {
+        if (operation.name === 'puts') {
           const value = this.stack.pop()
           console.log(value)
         } else {
+          if (!this.functions.hasOwnProperty(operation.name)) {
+            throw new Error(`unknown function ${operation.name}`)
+          }
           this.envStack.push({})
-          this.pcStack.push([0, operation.name.value])
+          this.pcStack.push([0, operation.name])
         }
       },
       Push: (operation: op.Push) => {
@@ -40,6 +45,11 @@ export class VirtualMachine {
       IArith: (operation: op.IArith) => {
         const right = this.stack.pop()
         const left = this.stack.pop()
+
+        if (!this.isNumber(right) || !this.isNumber(left)) {
+          throw new Error('right or left must be number')
+        }
+
         let result: Value.Value // TODO: Value.Integerにする
         switch (operation.operation) {
           case '+': result = left + right; break
@@ -84,10 +94,12 @@ export class VirtualMachine {
     }
   }
 
-  run(functions: FunctionTable): Value.Value {
+  run(_functions: FunctionTable): Value.Value {
+    this.functions = _functions
+
     this.labelTable = {}
-    Object.keys(functions).forEach((funName) => {
-      functions[funName].forEach((operation, i) => {
+    Object.keys(this.functions).forEach((funName) => {
+      this.functions[funName].forEach((operation, i) => {
         if (operation instanceof op.Label) {
           this.labelTable[operation.id] = i
         }
@@ -99,10 +111,10 @@ export class VirtualMachine {
     this.pcStack.push([0, '$main'])
     while (true) {
       const pc = this.pcStack.top()
-      if (pc[0] >= functions[pc[1]].length) {
+      if (pc[0] >= this.functions[pc[1]].length) {
         break
       }
-      const operation = functions[pc[1]][pc[0]]
+      const operation = this.functions[pc[1]][pc[0]]
 
       const f = this.table[operation.constructor.name]
       if (f === undefined) {
@@ -116,5 +128,9 @@ export class VirtualMachine {
     }
 
     return this.stack.top()
+  }
+
+  private isNumber(value: Value.Value): value is number {
+    return typeof value === 'number'
   }
 }

@@ -5,7 +5,7 @@ export class Operation { }
 
 export class CallFunction extends Operation {
   constructor(
-    public name: AST.Identifier,
+    public name: string,
     public argumentsLength: number
   ) {
     super()

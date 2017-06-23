@@ -5,8 +5,12 @@ export class Stack<T> {
     this.values.push(value)
   }
 
-  pop(): T | undefined {
-    return this.values.pop()
+  pop(): T {
+    const result = this.values.pop()
+    if (result === undefined) {
+      throw new Error('stack is empty')
+    }
+    return result
   }
 
   top(): T {

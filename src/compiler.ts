@@ -64,7 +64,7 @@ export class Compiler implements ASTVisitor<void> {
   }
   visitCallFunction(node: AST.CallFunction): void {
     node.args.forEach((arg) => arg.accept(this))
-    this.addOperation(new op.CallFunction(node.name, node.args.length))
+    this.addOperation(new op.CallFunction(node.name.value, node.args.length))
   }
   visitReferenceVariable(node: AST.ReferenceVariable): void {
     this.addOperation(new op.Load(node.name))
@@ -94,7 +94,8 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Push(node.value))
   }
   visitArrayLiteral(node: AST.ArrayLiteral): void {
-    throw new Error("Method not implemented.");
+    node.values.forEach((value) => value.accept(this))
+    this.addOperation(new op.CallFunction('buildArray', node.values.length))
   }
   visitBlock(node: AST.Block): void {
     node.statemetns.forEach((stmt) => stmt.accept(this))
