@@ -24,6 +24,13 @@ export class VirtualMachine {
         if (operation.name === 'puts') {
           const value = this.stack.pop()
           console.log(value)
+        } else if (operation.name === 'buildArray') {
+          const len = operation.argumentsLength
+          const values: Value.Value[] = []
+          for (let i = 0; i < len; i++) {
+            values.push(this.stack.pop())
+          }
+          this.stack.push(new Value.ChinoArray(values, len))
         } else {
           if (!this.functions.hasOwnProperty(operation.name)) {
             throw new Error(`unknown function ${operation.name}`)
@@ -50,7 +57,7 @@ export class VirtualMachine {
           throw new Error('right or left must be number')
         }
 
-        let result: Value.Value // TODO: Value.Integerにする
+        let result: Value.Integer
         switch (operation.operation) {
           case '+': result = left + right; break
           case '-': result = left - right; break
@@ -64,7 +71,7 @@ export class VirtualMachine {
       ICmp: (operation: op.ICmp) => {
         const right = this.stack.pop()
         const left = this.stack.pop()
-        let result: Value.Value // TODO: Value.Booleanにする
+        let result: Value.Boolean
         switch (operation.operation) {
           case '<=': result = left <= right; break
           case '>=': result = left >= right; break
