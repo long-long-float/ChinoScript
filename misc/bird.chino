@@ -14,11 +14,20 @@ loop {
 
   loop {
     if (time % 2sec == 0) {
-      const h = rand() * height * 80%
-      walls.push(Wall(width, h, 20, height - h))
+      const spaceY = rand() * height * 80%
+      const spaceHeight = rand() * height * 10% + height * 10%
+      walls.push(Wall(width, 0, 20, height - spaceY))
+      walls.push(Wall(width, spaceY + spaceHeight, 20, height - (spaceY + spaceHeight)))
     }
 
     walls@x -= 1
+
+    bird.y += bird.vy
+    bird.vy += 9.8
+
+    if (input.A.down?) {
+      bird.vy -= 30
+    }
 
     hit(bird, walls) { |bird, wall|
       break
