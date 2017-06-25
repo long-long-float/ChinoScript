@@ -28,7 +28,23 @@ export class Store extends Operation {
   }
 }
 
+export class StoreWithIndex extends Operation {
+  constructor(
+    public id: AST.Identifier // TODO: index: numberにする
+  ) {
+    super()
+  }
+}
+
 export class Load extends Operation {
+  constructor(
+    public id: AST.Identifier // TODO: index: numberにする
+  ) {
+    super()
+  }
+}
+
+export class LoadWithIndex extends Operation {
   constructor(
     public id: AST.Identifier // TODO: index: numberにする
   ) {

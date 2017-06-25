@@ -4,6 +4,8 @@ import * as fs from 'fs'
 import * as ChinoScript from '../src/index'
 
 describe('ChinoScript', function() {
+  const e = (code: string) => ChinoScript.evaluate(code)
+
   describe('examples', function() {
     fs.readdirSync('./examples')
       .forEach((path) => {
@@ -43,8 +45,6 @@ describe('ChinoScript', function() {
 
   describe('arithmetic operations', function() {
     it('should return collect value', function () {
-      const e = (code: string) => ChinoScript.evaluate(code)
-
       assert.equal(e('1 + 1;'), 2)
       assert.equal(e('3 - 1;'), 2)
       assert.equal(e('1 * 2;'), 2)
@@ -57,9 +57,15 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('array', function() {
+    it('should be able to stored and loaded', function() {
+      assert.equal(e('let ary = int[]{1, 2, 3}; ary[0];'), 1)
+      assert.equal(e('let ary = int[]{1, 2, 3}; ary[0] = 0; ary[0];'), 0)
+    })
+  })
+
   describe('if expr', function() {
     it('should return collect value', function() {
-      const e = (code: string) => ChinoScript.evaluate(code)
       assert.equal(e('if(1 == 1) { "OK"; } else { "NG"; };'), 'OK')
       assert.equal(e('if(1 != 1) { "NG"; } else { "OK"; };'), 'OK')
     })

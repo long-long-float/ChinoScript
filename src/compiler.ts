@@ -46,9 +46,13 @@ export class Compiler implements ASTVisitor<void> {
     this.currentFunctionName = prevName
   }
   visitAssign(node: AST.Assign): void {
-    // TODO: node.left.indexに対応
     node.right.accept(this)
-    this.addOperation(new op.Store(node.left.name))
+    if (node.left.index !== null) {
+      node.left.index.accept(this)
+      this.addOperation(new op.StoreWithIndex(node.left.name))
+    } else {
+      this.addOperation(new op.Store(node.left.name))
+    }
   }
   visitBinaryOp(node: AST.BinaryOp): void {
     node.left.accept(this)
@@ -67,7 +71,12 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.CallFunction(node.name.value, node.args.length))
   }
   visitReferenceVariable(node: AST.ReferenceVariable): void {
-    this.addOperation(new op.Load(node.name))
+    if (node.index !== null) {
+      node.index.accept(this)
+      this.addOperation(new op.LoadWithIndex(node.name))
+    } else {
+      this.addOperation(new op.Load(node.name))
+    }
   }
   visitIfExpression(node: AST.IfExpression): void {
     node.condition.accept(this)

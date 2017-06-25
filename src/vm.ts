@@ -30,7 +30,7 @@ export class VirtualMachine {
           for (let i = 0; i < len; i++) {
             values.push(this.stack.pop())
           }
-          this.stack.push(new Value.ChinoArray(values, len))
+          this.stack.push(new Value.ChinoArray(values.reverse(), len))
         } else {
           if (!this.functions.hasOwnProperty(operation.name)) {
             throw new Error(`unknown function ${operation.name}`)
@@ -46,8 +46,44 @@ export class VirtualMachine {
         const value = this.stack.pop()
         this.envStack.top()[operation.id.value] = value
       },
+      StoreWithIndex: (operation: op.StoreWithIndex) => {
+        const index = this.stack.pop()
+        const value = this.stack.pop()
+
+        const target = this.envStack.top()[operation.id.value]
+
+        if (!this.isNumber(index)) {
+          throw new Error('right or left must be number')
+        }
+
+        if (!(target instanceof Value.ChinoArray)) {
+          throw new Error('value must be array')
+        }
+
+        // ここでなぜかtargetがPrimitiveになる(バグ?)
+        const t = target as Value.ChinoArray
+
+        t.values[index] = value
+      },
       Load: (operation: op.Load) => {
         this.stack.push(this.envStack.top()[operation.id.value])
+      },
+      LoadWithIndex: (operation: op.LoadWithIndex) => {
+        const index = this.stack.pop()
+        const target = this.envStack.top()[operation.id.value]
+
+        if (!this.isNumber(index)) {
+          throw new Error('right or left must be number')
+        }
+
+        if (!(target instanceof Value.ChinoArray)) {
+          throw new Error('value must be array')
+        }
+
+        // ここでなぜかtargetがPrimitiveになる(バグ?)
+        const t = target as Value.ChinoArray
+
+        this.stack.push(t.values[index])
       },
       IArith: (operation: op.IArith) => {
         const right = this.stack.pop()

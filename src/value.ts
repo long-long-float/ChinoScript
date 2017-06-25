@@ -10,8 +10,8 @@ export class ChinoObject {
 
 export class ChinoArray extends ChinoObject {
   constructor(
-    values: Value[],
-    length: number
+    public values: Value[],
+    public length: number
   ) {
     super()
   }
