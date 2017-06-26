@@ -1,7 +1,7 @@
 import { ASTVisitor } from './ast-visitor'
 import * as AST from './ast'
 import { Type } from './type'
-import { TypeError } from './exception'
+import { TypeError, SyntaxError } from './exception'
 import { Stack } from './stack'
 import { parser } from './parser'
 
@@ -18,8 +18,13 @@ export class TypeChecker implements ASTVisitor<Type> {
     const initType = node.initialValue.accept(this)
     const variableType = node.usingTypeInference() ? initType : node.type
 
-    // TODO: 2重に定義していないかのチェック
-    this.varTableStack.top()[node.name.value] = variableType
+    const name = node.name.value
+    const table = this.varTableStack.top()
+    if (table.hasOwnProperty(name)) {
+      throw new SyntaxError(`${name} has already defined`, node.name.location)
+    }
+
+    table[name] = variableType
 
     if (!node.usingTypeInference()) {
       this.checkSatisfied(variableType, initType, node.location)
@@ -50,6 +55,8 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     const conditionType = node.condition.accept(this)
     this.checkSatisfied(new Type('Boolean', []), conditionType, node.condition.location)
+
+    node.block.accept(this)
 
     return new Type('Tuple', [])
   }
@@ -110,16 +117,26 @@ export class TypeChecker implements ASTVisitor<Type> {
     }
   }
   visitReferenceVariable(node: AST.ReferenceVariable): Type {
-    // TODO: 存在チェック
-    return this.varTableStack.top()[node.name.value]
+    const name = node.name.value
+    const table = this.varTableStack.top()
+    if (!table.hasOwnProperty(name)) {
+      throw new SyntaxError(`${name} is not defined`, node.location)
+    }
+    return table[name]
   }
   visitIfExpression(node: AST.IfExpression): Type {
     const condType = node.condition.accept(this)
-    const thenType = node.thenBlock.accept(this)
-    const elseType = node.elseBlock.accept(this)
-
     this.checkSatisfied(new Type('Boolean', []), condType, node.condition.location)
-    this.checkEquals(thenType, elseType, node.thenBlock.location)
+
+    const thenType = node.thenBlock.accept(this)
+
+    if (!thenType.equals(new Type('Tuple', []))) {
+      if (node.elseBlock === null) {
+        throw new SyntaxError('else block must be needed when then block doesn\'t return unit.', node.location)
+      }
+      const elseType = node.elseBlock.accept(this)
+      this.checkEquals(thenType, elseType, node.thenBlock.location)
+    }
 
     return thenType
   }
@@ -136,8 +153,8 @@ export class TypeChecker implements ASTVisitor<Type> {
     return node.type
   }
   visitBlock(node: AST.Block): Type {
-    node.statemetns.forEach((stmt) => stmt.accept(this))
-    return node.statemetns[node.statemetns.length - 1].accept(this)
+    const types = node.statemetns.map((stmt) => stmt.accept(this))
+    return types[types.length - 1]
   }
   visitIdentifier(node: AST.Identifier): Type {
     throw new Error("Method not implemented.");

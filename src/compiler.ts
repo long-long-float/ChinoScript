@@ -108,8 +108,10 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Jump(endLabel.id))
 
     // else
-    this.addOperation(elseLabel)
-    node.elseBlock.accept(this)
+    if (node.elseBlock !== null) {
+      this.addOperation(elseLabel)
+      node.elseBlock.accept(this)
+    }
 
     this.addOperation(endLabel)
   }

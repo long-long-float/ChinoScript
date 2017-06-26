@@ -32,6 +32,7 @@ describe('ChinoScript', function() {
 
       assertThrowTypeError('int a = 1; if(a) { 1; } else { 2; };')
       assertThrowTypeError('int a = 1; if(a == 0) { 1; } else { "a"; };')
+      assertThrowTypeError('int a = 0; if(a == 0) { "NG"; };')
 
       assertThrowTypeError('int f(int x) { return x * 2; } f("str");')
       assertThrowTypeError('int f(string x) { return x * 2; } f("str");')
@@ -40,6 +41,10 @@ describe('ChinoScript', function() {
       assertThrowTypeError('1 + "a";')
       assertThrowTypeError('1 || 2;')
       assertThrowTypeError('1 == "a";')
+    })
+
+    it('should pass', function() {
+      assert.doesNotThrow(() => e('int a = 0; if(a == 0) { puts("OK"); };'))
     })
   })
 
@@ -72,8 +77,7 @@ describe('ChinoScript', function() {
     it('should finish when break called', function() {
       assert.equal(e(`let sum = 0;
         for (int i = 0; i < 5; i = i + 1) {
-          if (i > 3) break;
-          else 0;;
+          if (i > 3) break;;
           sum = sum + i;
         }
         sum;`), 3)

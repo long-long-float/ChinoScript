@@ -14,3 +14,12 @@ export class TypeError extends Error {
   }
 
 }
+
+export class SyntaxError extends Error {
+  constructor(
+    message: string,
+    public location: parser.Location
+  ) {
+    super(message)
+  }
+}

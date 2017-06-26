@@ -110,7 +110,7 @@ statement
 
 def_var
   = eternal:"eternal"? _ type:type _ name:identifier _ length:("[" integer "]")? _ init_value:("=" _  expression) _ ";"
-    { return new AST.DefineVariable(eternal !== null, type, name, length !== null ? length[1] : null, init_value[2]); }
+    { return new AST.DefineVariable(eternal !== null, type, name, length !== null ? length[1] : null, init_value[2], location()); }
 
 return_stmt
   = "return" _ value:expression? _ ";"
@@ -182,8 +182,8 @@ integer
     { return new AST.IntegerLiteral(parseInt(text(), 10), location()); }
 
 if_expr
-  = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)
-    { return new AST.IfExpression(cond, iftrue, iffalse[3]); }
+  = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
+    { return new AST.IfExpression(cond, iftrue, iffalse !== null ? iffalse[3] : null); }
 
 array
   = type:array_type _ "{" _ fst_value:expression? values:(_ "," _ expression)* _ "}"

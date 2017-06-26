@@ -17,11 +17,10 @@ if (process.argv[2] == undefined) {
   } catch (e) {
     if (e.location) {
       const l = e.location.start
-      let msg = e.message
       const line = code.split(/\r\n|\r|\n/)
       let space = '';
       for (var i = 0; i < l.column - 1; i++) { space += ' ' }
-      msg += `
+      const msg = `${e.message} at line: ${l.line}, column: ${l.column}
 ${line[l.line - 1]}
 ${space + '^'}`
 

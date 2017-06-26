@@ -224,7 +224,7 @@ export class IfExpression extends Expression {
   constructor(
     public condition: Expression,
     public thenBlock: Block,
-    public elseBlock: Block,
+    public elseBlock: Block | null,
   ) {
     super(condition.location)
   }
