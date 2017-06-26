@@ -103,10 +103,11 @@ def_arg
     { return new AST.ArgumentDefinition(type, name, location()); }
 
 statement
-  = expr:expression _ ";" { return expr }
-  / def_var
+  = def_var
   / return_stmt
+  / break_stmt
   / for_stmt
+  / expr:expression _ ";" { return expr }
 
 def_var
   = eternal:"eternal"? _ type:type _ name:identifier _ length:("[" integer "]")? _ init_value:("=" _  expression) _ ";"
@@ -115,6 +116,10 @@ def_var
 return_stmt
   = "return" _ value:expression? _ ";"
     { return new AST.ReturnStatement(value); }
+
+break_stmt
+  = "break" _ ";"
+    { return new AST.BreakStatement(location()); }
 
 for_stmt
   = "for" _ "(" _ init:(def_var / expression _ ";")  _ cond:expression _ ";" _ update:expression _ ")" _ block:block

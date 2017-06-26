@@ -1,6 +1,7 @@
 import { ASTVisitor } from './ast-visitor'
 import * as AST from './ast'
 import * as op from './operation'
+import { Stack } from './stack'
 
 export type FunctionTable = { [name: string]: op.Operation[] }
 
@@ -9,6 +10,8 @@ export class Compiler implements ASTVisitor<void> {
 
   private functions: FunctionTable = { '$main': [] }
   private currentFunctionName: string = '$main'
+
+  private loopEndLabelStack = new Stack<op.Label>()
 
   constructor() {
   }
@@ -33,6 +36,10 @@ export class Compiler implements ASTVisitor<void> {
     node.value.accept(this)
     this.addOperation(new op.Ret())
   }
+  visitBreakStatement(node: AST.BreakStatement): void {
+    const label = this.loopEndLabelStack.top()
+    this.addOperation(new op.Jump(label.id))
+  }
   visitForStatement(node: AST.ForStatement): void {
     node.init.accept(this)
 
@@ -44,7 +51,10 @@ export class Compiler implements ASTVisitor<void> {
     node.condition.accept(this)
     this.addOperation(new op.JumpUnless(tailLabel.id))
 
+    this.loopEndLabelStack.push(tailLabel)
     node.block.accept(this)
+    this.loopEndLabelStack.pop()
+
     node.update.accept(this)
     this.addOperation(new op.Jump(headLabel.id))
 
@@ -108,8 +118,8 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.Jump(endLabel.id))
 
     // else
+    this.addOperation(elseLabel)
     if (node.elseBlock !== null) {
-      this.addOperation(elseLabel)
       node.elseBlock.accept(this)
     }
 

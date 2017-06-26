@@ -53,6 +53,18 @@ export class ReturnStatement extends Statement {
   }
 }
 
+export class BreakStatement extends Statement {
+  constructor(
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitBreakStatement(this)
+  }
+}
+
 export class ForStatement extends Statement {
   constructor(
     public init: DefineVariable | Expression,

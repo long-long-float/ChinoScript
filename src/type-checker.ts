@@ -36,6 +36,10 @@ export class TypeChecker implements ASTVisitor<Type> {
     // TODO: 関数の最後以外のreturnにも対応
     return node.value.accept(this)
   }
+  visitBreakStatement(node: AST.BreakStatement): Type {
+    // TODO: ループ内でしか使えないようにチェック
+    return new Type('Tuple', [])
+  }
   visitFunctionDefinition(node: AST.FunctionDefinition): Type {
     this.functions[node.name.value] = node
 

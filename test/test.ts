@@ -74,13 +74,13 @@ describe('ChinoScript', function() {
       assert.equal(e('let sum = 0; for (int i = 0; i < 5; i = i + 1) { sum = sum + i; } sum;'), 10)
     })
 
-    it('should finish when break called', function() {
+    it('should finish when break used', function() {
       assert.equal(e(`let sum = 0;
         for (int i = 0; i < 5; i = i + 1) {
           if (i > 3) break;;
           sum = sum + i;
         }
-        sum;`), 3)
+        sum;`), 6)
     })
   })
 
