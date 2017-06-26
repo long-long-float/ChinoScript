@@ -3,6 +3,7 @@ import * as AST from './ast'
 import { Type } from './type'
 import { TypeError } from './exception'
 import { Stack } from './stack'
+import { parser } from './parser'
 
 export class TypeChecker implements ASTVisitor<Type> {
   varTableStack = new Stack<{ [name: string]: Type }>()
@@ -21,7 +22,7 @@ export class TypeChecker implements ASTVisitor<Type> {
     this.varTableStack.top()[node.name.value] = variableType
 
     if (!node.usingTypeInference()) {
-      this.checkSatisfied(variableType, initType)
+      this.checkSatisfied(variableType, initType, node.location)
     }
 
     return new Type('Tuple', [])
@@ -40,19 +41,27 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     this.varTableStack.pop()
 
-    this.checkSatisfied(node.outputType, resultType)
+    this.checkSatisfied(node.outputType, resultType, node.body.location)
 
     return resultType
+  }
+  visitForStatement(node: AST.ForStatement): Type {
+    node.init.accept(this)
+
+    const conditionType = node.condition.accept(this)
+    this.checkSatisfied(new Type('Boolean', []), conditionType, node.condition.location)
+
+    return new Type('Tuple', [])
   }
   visitAssign(node: AST.Assign): Type {
     const leftType = this.varTableStack.top()[node.left.name.value]
     const rightType = node.right.accept(this)
 
     if (node.left.index !== null) {
-      this.checkSatisfied(new Type('Array', []), leftType, true)
-      this.checkSatisfied(leftType.innerTypes[0], rightType)
+      this.checkSatisfied(new Type('Array', []), leftType, node.left.location, true)
+      this.checkSatisfied(leftType.innerTypes[0], rightType, node.right.location)
     } else {
-      this.checkSatisfied(leftType, rightType)
+      this.checkSatisfied(leftType, rightType, node.right.location)
     }
     return leftType
   }
@@ -60,7 +69,7 @@ export class TypeChecker implements ASTVisitor<Type> {
     const leftType = node.left.accept(this)
     const rightType = node.right.accept(this)
 
-    this.checkEquals(leftType, rightType)
+    this.checkEquals(leftType, rightType, node.location)
 
     let expectedType: Type
     if (node.type === AST.BinaryOpType.Logic) {
@@ -69,7 +78,7 @@ export class TypeChecker implements ASTVisitor<Type> {
       // TODO: ==, !=はInteger以外も通すようにする
       expectedType = new Type('Integer', [])
     }
-    this.checkSatisfied(expectedType, leftType)
+    this.checkSatisfied(expectedType, leftType, node.location)
 
     let resultType: Type
     if (node.type === AST.BinaryOpType.Arith) {
@@ -91,11 +100,11 @@ export class TypeChecker implements ASTVisitor<Type> {
     } else {
       const target = this.functions[node.name.value]
       if (target.args.length !== node.args.length) {
-        throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.args.length})`)
+        throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.args.length})`, node.location)
       }
       target.args.forEach((arg, i) => {
         const a = node.args[i].accept(this)
-        this.checkSatisfied(arg.type, a)
+        this.checkSatisfied(arg.type, a, node.args[i].location)
       })
       return target.outputType
     }
@@ -109,8 +118,8 @@ export class TypeChecker implements ASTVisitor<Type> {
     const thenType = node.thenBlock.accept(this)
     const elseType = node.elseBlock.accept(this)
 
-    this.checkSatisfied(new Type('Boolean', []), condType)
-    this.checkEquals(thenType, elseType)
+    this.checkSatisfied(new Type('Boolean', []), condType, node.condition.location)
+    this.checkEquals(thenType, elseType, node.thenBlock.location)
 
     return thenType
   }
@@ -122,7 +131,7 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitArrayLiteral(node: AST.ArrayLiteral): Type {
     node.values.forEach((value) => {
-      this.checkSatisfied(node.type.innerTypes[0], value.accept(this))
+      this.checkSatisfied(node.type.innerTypes[0], value.accept(this), value.location)
     })
     return node.type
   }
@@ -134,16 +143,16 @@ export class TypeChecker implements ASTVisitor<Type> {
     throw new Error("Method not implemented.");
   }
 
-  private checkSatisfied(expected: Type, actual: Type, shallow = false) {
+  private checkSatisfied(expected: Type, actual: Type, location: parser.Location, shallow = false) {
     const equal = shallow ? expected.name === actual.name : expected.equals(actual)
     if (!equal) {
-      throw TypeError.fromTypes(expected, actual)
+      throw TypeError.fromTypes(expected, actual, location)
     }
   }
 
-  private checkEquals(x: Type, y: Type) {
+  private checkEquals(x: Type, y: Type, location: parser.Location) {
     if (!x.equals(y)) {
-      throw new TypeError(`type mismatch (${x.name} and ${y.name})`)
+      throw new TypeError(`type mismatch (${x.name} and ${y.name})`, location)
     }
   }
 

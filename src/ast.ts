@@ -53,6 +53,22 @@ export class ReturnStatement extends Statement {
   }
 }
 
+export class ForStatement extends Statement {
+  constructor(
+    public init: DefineVariable | Expression,
+    public condition: Expression,
+    public update: Expression,
+    public block: Block,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitForStatement(this)
+  }
+}
+
 export class FunctionDefinition extends Statement {
   constructor(
     public outputType: Type,

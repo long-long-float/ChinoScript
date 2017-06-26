@@ -33,6 +33,23 @@ export class Compiler implements ASTVisitor<void> {
     node.value.accept(this)
     this.addOperation(new op.Ret())
   }
+  visitForStatement(node: AST.ForStatement): void {
+    node.init.accept(this)
+
+    const headLabel = this.createLabel()
+    const tailLabel = this.createLabel()
+
+    this.addOperation(headLabel)
+
+    node.condition.accept(this)
+    this.addOperation(new op.JumpUnless(tailLabel.id))
+
+    node.block.accept(this)
+    node.update.accept(this)
+    this.addOperation(new op.Jump(headLabel.id))
+
+    this.addOperation(tailLabel)
+  }
   visitFunctionDefinition(node: AST.FunctionDefinition): void {
     const prevName = this.currentFunctionName
     this.currentFunctionName = node.name.value

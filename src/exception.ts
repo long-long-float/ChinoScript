@@ -1,14 +1,16 @@
 import { Type } from './type'
+import { parser } from './parser'
 
 export class TypeError extends Error {
   constructor(
-    message: string
+    message: string,
+    public location: parser.Location
   ) {
     super(message)
   }
 
-  static fromTypes(expect: Type, actual: Type): TypeError {
-    return new TypeError(`expected '${expect.toString()}', but '${actual.toString()}' given`)
+  static fromTypes(expect: Type, actual: Type, location: parser.Location): TypeError {
+    return new TypeError(`expected '${expect.toString()}', but '${actual.toString()}' given`, location)
   }
 
 }

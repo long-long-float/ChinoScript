@@ -106,6 +106,7 @@ statement
   = expr:expression _ ";" { return expr }
   / def_var
   / return_stmt
+  / for_stmt
 
 def_var
   = eternal:"eternal"? _ type:type _ name:identifier _ length:("[" integer "]")? _ init_value:("=" _  expression) _ ";"
@@ -114,6 +115,10 @@ def_var
 return_stmt
   = "return" _ value:expression? _ ";"
     { return new AST.ReturnStatement(value); }
+
+for_stmt
+  = "for" _ "(" _ init:(def_var / expression _ ";")  _ cond:expression _ ";" _ update:expression _ ")" _ block:block
+    { return new AST.ForStatement(init, cond, update, block); }
 
 expression
   = left:lh_expression rest:(_ "=" _ term0)+

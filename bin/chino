@@ -15,7 +15,7 @@ if (process.argv[2] == undefined) {
     console.log(`result: ${result}`)
 
   } catch (e) {
-    if (e instanceof parser.parser.SyntaxError) {
+    if (e.location) {
       const l = e.location.start
       let msg = e.message
       const line = code.split(/\r\n|\r|\n/)

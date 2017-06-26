@@ -64,6 +64,22 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('for statement', function() {
+    it('should repeat block', function() {
+      assert.equal(e('let sum = 0; for (int i = 0; i < 5; i = i + 1) { sum = sum + i; } sum;'), 10)
+    })
+
+    it('should finish when break called', function() {
+      assert.equal(e(`let sum = 0;
+        for (int i = 0; i < 5; i = i + 1) {
+          if (i > 3) break;
+          else 0;;
+          sum = sum + i;
+        }
+        sum;`), 3)
+    })
+  })
+
   describe('if expr', function() {
     it('should return collect value', function() {
       assert.equal(e('if(1 == 1) { "OK"; } else { "NG"; };'), 'OK')
