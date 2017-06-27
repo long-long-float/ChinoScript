@@ -5,6 +5,7 @@ export interface ASTVisitor<T> {
   visitReturnStatement(node: AST.ReturnStatement): T
   visitBreakStatement(node: AST.BreakStatement): T
   visitForStatement(node: AST.ForStatement): T
+  visitWhileStatement(node: AST.WhileStatement): T
   visitFunctionDefinition(node: AST.FunctionDefinition): T
   visitAssign(node: AST.Assign): T
   visitBinaryOp(node: AST.BinaryOp): T

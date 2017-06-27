@@ -60,6 +60,16 @@ export class TypeChecker implements ASTVisitor<Type> {
     const conditionType = node.condition.accept(this)
     this.checkSatisfied(new Type('Boolean', []), conditionType, node.condition.location)
 
+    node.update.accept(this)
+
+    node.block.accept(this)
+
+    return new Type('Tuple', [])
+  }
+  visitWhileStatement(node: AST.WhileStatement): Type {
+    const conditionType = node.condition.accept(this)
+    this.checkSatisfied(new Type('Boolean', []), conditionType, node.condition.location)
+
     node.block.accept(this)
 
     return new Type('Tuple', [])
@@ -109,6 +119,9 @@ export class TypeChecker implements ASTVisitor<Type> {
       node.args[0].accept(this)
       return new Type('Tuple', [])
     } else {
+      if (!this.functions.hasOwnProperty(node.name.value)) {
+        throw new SyntaxError(`${node.name.value} is not defined`, node.location)
+      }
       const target = this.functions[node.name.value]
       if (target.args.length !== node.args.length) {
         throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.args.length})`, node.location)

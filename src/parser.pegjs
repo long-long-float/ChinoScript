@@ -115,6 +115,7 @@ statement
   / return_stmt
   / break_stmt
   / for_stmt
+  / while_stmt
   / expr:expression _ ";" { return expr }
 
 def_var
@@ -131,7 +132,11 @@ break_stmt
 
 for_stmt
   = "for" _ "(" _ init:(def_var / expression _ ";")  _ cond:expression _ ";" _ update:expression _ ")" _ block:block
-    { return new AST.ForStatement(init, cond, update, block); }
+    { return new AST.ForStatement(init, cond, update, block, location()); }
+
+while_stmt
+  = "while" _ "(" _ cond:expression _ ")" _ block:block
+    { return new AST.WhileStatement(cond, block, location()); }
 
 expression
   = left:lh_expression rest:(_ "=" _ term0)+

@@ -81,6 +81,20 @@ export class ForStatement extends Statement {
   }
 }
 
+export class WhileStatement extends Statement {
+  constructor(
+    public condition: Expression,
+    public block: Block,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitWhileStatement(this)
+  }
+}
+
 export class FunctionDefinition extends Statement {
   constructor(
     public outputType: Type,

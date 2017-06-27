@@ -60,6 +60,21 @@ export class Compiler implements ASTVisitor<void> {
 
     this.addOperation(tailLabel)
   }
+  visitWhileStatement(node: AST.WhileStatement): void {
+    const headLabel = this.createLabel()
+    const tailLabel = this.createLabel()
+
+    this.addOperation(headLabel)
+
+    node.condition.accept(this)
+    this.addOperation(new op.JumpUnless(tailLabel.id))
+
+    this.loopEndLabelStack.push(tailLabel)
+    node.block.accept(this)
+    this.loopEndLabelStack.pop()
+
+    this.addOperation(tailLabel)
+  }
   visitFunctionDefinition(node: AST.FunctionDefinition): void {
     const prevName = this.currentFunctionName
     this.currentFunctionName = node.name.value
