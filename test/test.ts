@@ -48,6 +48,15 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('string', function() {
+    it('is treated as char array', function() {
+      assert.doesNotThrow(() => e('char[] str = "hello";'))
+      assert.doesNotThrow(() => e("string str = char[]{'H', 'e', 'l', 'l', 'o'};"))
+
+      assert.equal(ChinoScript.valueToString(e('let str = "Helle"; str[4] = \'o\'; str;')), 'Hello')
+    })
+  })
+
   describe('arithmetic operations', function() {
     it('should return collect value', function () {
       assert.equal(e('1 + 1;'), 2)
@@ -86,8 +95,8 @@ describe('ChinoScript', function() {
 
   describe('if expr', function() {
     it('should return collect value', function() {
-      assert.equal(e('if(1 == 1) { "OK"; } else { "NG"; };'), 'OK')
-      assert.equal(e('if(1 != 1) { "NG"; } else { "OK"; };'), 'OK')
+      assert.equal(ChinoScript.valueToString(e('if(1 == 1) { "OK"; } else { "NG"; };')), 'OK')
+      assert.equal(ChinoScript.valueToString(e('if(1 != 1) { "NG"; } else { "OK"; };')), 'OK')
     })
   })
 

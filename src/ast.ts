@@ -258,16 +258,18 @@ export class IntegerLiteral extends Expression {
   }
 }
 
-export class StringLiteral extends Expression {
+export class CharLiteral extends Expression {
   constructor(
     public value: string,
     location: parser.Location
   ) {
     super(location)
+
+    // TODO: 1文字かチェック
   }
 
   accept<T>(visitor: ASTVisitor<T>): T {
-    return visitor.visitStringLiteral(this)
+    return visitor.visitCharLiteral(this)
   }
 }
 

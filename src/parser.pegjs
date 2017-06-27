@@ -49,9 +49,17 @@
       return new Types.Type('Array', [new Types.Type(typeName, [])]);
     } else if (id.value === 'void') {
       return new Types.Type('Tuple', []);
+    } else if (id.value === 'string') {
+      return new Types.Type('Array', [new Types.Type('Char', [])]);
     } else {
       return new Types.Type(typeName, []);
     }
+  }
+
+  function string(value) {
+    return new AST.ArrayLiteral(new Types.Type('Array', [new Types.Type('Char', [])]), value.map(function(ch) {
+      return new AST.CharLiteral(ch, location());
+    }), location())
   }
 
   // utility functions
@@ -170,8 +178,8 @@ factor
     { return new AST.CallFunction(name, args(fst_arg, rest_args)); }
   / integer
   / string
-  /*/ char
-  / boolean */
+  / char
+  // / boolean
   / id:identifier index:(_ "[" _ expression _ "]" _)?
     { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
   / array
@@ -179,7 +187,11 @@ factor
 string
   // TODO: エスケープ周りを修正
   = "\"" value:([^"]*) "\""
-    { return new AST.StringLiteral(value.join("")); }
+    { return string(value); }
+
+char
+  = "'" value:. "'"
+    { return new AST.CharLiteral(value); }
 
 integer
   // TODO: 負数に対応

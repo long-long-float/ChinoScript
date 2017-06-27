@@ -2,6 +2,7 @@ import * as op from './operation'
 import * as Value from './value'
 import { FunctionTable } from './compiler'
 import { Stack } from './stack'
+import { valueToString } from './index'
 
 type Environment = { [name: string]: Value.Value }
 
@@ -23,7 +24,7 @@ export class VirtualMachine {
       CallFunction: (operation: op.CallFunction) => {
         if (operation.name === 'puts') {
           const value = this.stack.pop()
-          console.log(value)
+          console.log(valueToString(value))
         } else if (operation.name === 'buildArray') {
           const len = operation.argumentsLength
           const values: Value.Value[] = []

@@ -11,6 +11,14 @@ import * as util from 'util'
 
 export const exceptions = Exceptions
 
+export function valueToString(value: Value.Value): string {
+  if (value instanceof Value.ChinoArray) {
+    return value.values.map((ch: number) => String.fromCharCode(ch)).join('')
+  } else {
+    return value.toString()
+  }
+}
+
 export function evaluate(code: string, debug = false): Value.Value {
   const ast = parse(code)
 

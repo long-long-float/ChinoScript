@@ -128,8 +128,8 @@ export class Compiler implements ASTVisitor<void> {
   visitIntegerLiteral(node: AST.IntegerLiteral): void {
     this.addOperation(new op.Push(node.value))
   }
-  visitStringLiteral(node: AST.StringLiteral): void {
-    this.addOperation(new op.Push(node.value))
+  visitCharLiteral(node: AST.CharLiteral): void {
+    this.addOperation(new op.Push(node.value.charCodeAt(0)))
   }
   visitArrayLiteral(node: AST.ArrayLiteral): void {
     node.values.forEach((value) => value.accept(this))

@@ -147,8 +147,8 @@ export class TypeChecker implements ASTVisitor<Type> {
   visitIntegerLiteral(node: AST.IntegerLiteral): Type {
     return new Type('Integer', [])
   }
-  visitStringLiteral(node: AST.StringLiteral): Type {
-    return new Type('String', [])
+  visitCharLiteral(node: AST.CharLiteral): Type {
+    return new Type('Char', [])
   }
   visitArrayLiteral(node: AST.ArrayLiteral): Type {
     node.values.forEach((value) => {
