@@ -1,6 +1,6 @@
 import * as op from './operation'
 import * as Value from './value'
-import { FunctionTable } from './compiler'
+import { FunctionTable, DefaultFunName } from './compiler'
 import { Stack } from './stack'
 import { valueToString } from './index'
 import { Environment } from './environment'
@@ -10,6 +10,7 @@ import * as util from 'util'
 export class VirtualMachine {
   private stack = new Stack<Value.Value>()
   private variableEnv = new Environment<Value.Value>()
+  private globalVariableEnv = new Environment<Value.Value>()
 
   private functions: FunctionTable
 
@@ -47,13 +48,19 @@ export class VirtualMachine {
       },
       Store: (operation: op.Store) => {
         const value = this.stack.pop()
-        this.variableEnv.store(operation.id.value, value)
+        if (operation.global) {
+          this.globalVariableEnv.store(operation.id.toString(), value)
+        } else {
+          this.variableEnv.store(operation.id.toString(), value)
+        }
       },
       StoreWithIndex: (operation: op.StoreWithIndex) => {
         const index = this.stack.pop()
         const value = this.stack.pop()
 
-        const target = this.variableEnv.reference(operation.id.value)
+        const target = operation.global ?
+          this.globalVariableEnv.reference(operation.id.toString()) :
+          this.variableEnv.reference(operation.id.toString())
 
         if (!this.isNumber(index)) {
           throw new Error('right or left must be number')
@@ -69,15 +76,18 @@ export class VirtualMachine {
         t.values[index] = value
       },
       Load: (operation: op.Load) => {
-        console.log(util.inspect(this.variableEnv, false, null))
-        const value = this.variableEnv.reference(operation.id.value)
+        const value = operation.global ?
+          this.globalVariableEnv.reference(operation.id.toString()) :
+          this.variableEnv.reference(operation.id.toString())
         if (value !== null) {
           this.stack.push(value)
         }
       },
       LoadWithIndex: (operation: op.LoadWithIndex) => {
         const index = this.stack.pop()
-        const target = this.variableEnv.reference(operation.id.value)
+        const target = operation.global ?
+          this.globalVariableEnv.reference(operation.id.toString()) :
+          this.variableEnv.reference(operation.id.toString())
 
         if (!this.isNumber(index)) {
           throw new Error('right or left must be number')
@@ -156,7 +166,7 @@ export class VirtualMachine {
       })
     })
 
-    this.pcStack.push([0, '$main'])
+    this.pcStack.push([0, DefaultFunName])
     while (true) {
       let pc = this.pcStack.top()
       if (pc[0] >= this.functions[pc[1]].length) {

@@ -22,7 +22,8 @@ export class Push extends Operation {
 
 export class Store extends Operation {
   constructor(
-    public id: AST.Identifier // TODO: index: numberにする
+    public id: number,
+    public global: boolean
   ) {
     super()
   }
@@ -30,7 +31,8 @@ export class Store extends Operation {
 
 export class StoreWithIndex extends Operation {
   constructor(
-    public id: AST.Identifier // TODO: index: numberにする
+    public id: number,
+    public global: boolean
   ) {
     super()
   }
@@ -38,7 +40,8 @@ export class StoreWithIndex extends Operation {
 
 export class Load extends Operation {
   constructor(
-    public id: AST.Identifier // TODO: index: numberにする
+    public id: number,
+    public global: boolean
   ) {
     super()
   }
@@ -46,7 +49,8 @@ export class Load extends Operation {
 
 export class LoadWithIndex extends Operation {
   constructor(
-    public id: AST.Identifier // TODO: index: numberにする
+    public id: number,
+    public global: boolean
   ) {
     super()
   }

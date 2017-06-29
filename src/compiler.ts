@@ -2,14 +2,23 @@ import { ASTVisitor } from './ast-visitor'
 import * as AST from './ast'
 import * as op from './operation'
 import { Stack } from './stack'
+import { Environment } from './environment'
 
 export type FunctionTable = { [name: string]: op.Operation[] }
+
+export const DefaultFunName = '$main'
 
 export class Compiler implements ASTVisitor<void> {
   private labelCounter = 0
 
-  private functions: FunctionTable = { '$main': [] }
-  private currentFunctionName: string = '$main'
+  private functions: FunctionTable = { [DefaultFunName]: [] }
+  private currentFunctionName: string = DefaultFunName
+
+  private variableEnv = new Environment<number>()
+  private variableCounts: { [name: string]: number } = { [DefaultFunName]: 0 }
+
+  private globalEnv = new Environment<number>()
+  private globalVariableCount = 0
 
   private loopEndLabelStack = new Stack<op.Label>()
 
@@ -28,9 +37,14 @@ export class Compiler implements ASTVisitor<void> {
   }
 
   visitDefineVariable(node: AST.DefineVariable): void {
-    // TODO: 変数名を登録する
     node.initialValue.accept(this)
-    this.addOperation(new op.Store(node.name))
+    if (this.currentFunctionName === DefaultFunName) { // global variable
+      const id = this.defineGlobalVariable(node.name.value)
+      this.addOperation(new op.Store(id, true))
+    } else { // local variable
+      const id = this.defineVariable(node.name.value)
+      this.addOperation(new op.Store(id, false))
+    }
   }
   visitReturnStatement(node: AST.ReturnStatement): void {
     node.value.accept(this)
@@ -79,24 +93,34 @@ export class Compiler implements ASTVisitor<void> {
     const prevName = this.currentFunctionName
     this.currentFunctionName = node.name.value
     this.functions[this.currentFunctionName] = []
+    this.variableCounts[this.currentFunctionName] = 0
+
+    this.variableEnv.push()
 
     node.args.forEach((arg) => {
-      this.addOperation(new op.Store(arg.name))
+      const id = this.defineVariable(arg.name.value)
+      this.addOperation(new op.Store(id, false))
     })
     node.body.accept(this)
 
     // TODO: すでにRETがある場合は追加しないようにする
     this.addOperation(new op.Ret())
 
+    this.variableEnv.pop()
+
     this.currentFunctionName = prevName
   }
   visitAssign(node: AST.Assign): void {
     node.right.accept(this)
+
+    const name = node.left.name.value
+    const [id, global] = this.varIdByName(name)
+
     if (node.left.index !== null) {
       node.left.index.accept(this)
-      this.addOperation(new op.StoreWithIndex(node.left.name))
+      this.addOperation(new op.StoreWithIndex(id, global))
     } else {
-      this.addOperation(new op.Store(node.left.name))
+      this.addOperation(new op.Store(id, global))
     }
   }
   visitBinaryOp(node: AST.BinaryOp): void {
@@ -116,11 +140,14 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.CallFunction(node.name.value, node.args.length))
   }
   visitReferenceVariable(node: AST.ReferenceVariable): void {
+    const name = node.name.value
+    const [id, global] = this.varIdByName(name)
+
     if (node.index !== null) {
       node.index.accept(this)
-      this.addOperation(new op.LoadWithIndex(node.name))
+      this.addOperation(new op.LoadWithIndex(id, global))
     } else {
-      this.addOperation(new op.Load(node.name))
+      this.addOperation(new op.Load(id, global))
     }
   }
   visitIfExpression(node: AST.IfExpression): void {
@@ -162,5 +189,32 @@ export class Compiler implements ASTVisitor<void> {
 
   private createLabel() {
     return new op.Label(this.labelCounter++)
+  }
+
+  private defineVariable(name: string): number {
+    const id = this.variableCounts[this.currentFunctionName]
+    this.variableEnv.define(name, id)
+    this.variableCounts[this.currentFunctionName]++
+    return id
+  }
+
+  private defineGlobalVariable(name: string): number {
+    const id = this.globalVariableCount
+    this.globalEnv.define(name, id)
+    this.globalVariableCount++
+    return id
+  }
+
+  private varIdByName(name: string): [number, boolean] {
+    let id = this.variableEnv.reference(name)
+    let global = false
+    if (id === null) {
+      id = this.globalEnv.reference(name)
+      global = true
+    }
+
+    if (id === null) throw new Error('Bug')
+
+    return [id, global]
   }
 }
