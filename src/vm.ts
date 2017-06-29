@@ -3,12 +3,13 @@ import * as Value from './value'
 import { FunctionTable } from './compiler'
 import { Stack } from './stack'
 import { valueToString } from './index'
+import { Environment } from './environment'
 
-type Environment = { [name: string]: Value.Value }
+import * as util from 'util'
 
 export class VirtualMachine {
   private stack = new Stack<Value.Value>()
-  private envStack = new Stack<Environment>()
+  private variableEnv = new Environment<Value.Value>()
 
   private functions: FunctionTable
 
@@ -36,8 +37,9 @@ export class VirtualMachine {
           if (!this.functions.hasOwnProperty(operation.name)) {
             throw new Error(`unknown function ${operation.name}`)
           }
-          this.envStack.push({})
-          this.pcStack.push([0, operation.name])
+          this.variableEnv.push()
+          // 命令実行後にpcがインクリメントされてしまうので-1
+          this.pcStack.push([-1, operation.name])
         }
       },
       Push: (operation: op.Push) => {
@@ -45,13 +47,13 @@ export class VirtualMachine {
       },
       Store: (operation: op.Store) => {
         const value = this.stack.pop()
-        this.envStack.top()[operation.id.value] = value
+        this.variableEnv.store(operation.id.value, value)
       },
       StoreWithIndex: (operation: op.StoreWithIndex) => {
         const index = this.stack.pop()
         const value = this.stack.pop()
 
-        const target = this.envStack.top()[operation.id.value]
+        const target = this.variableEnv.reference(operation.id.value)
 
         if (!this.isNumber(index)) {
           throw new Error('right or left must be number')
@@ -67,11 +69,15 @@ export class VirtualMachine {
         t.values[index] = value
       },
       Load: (operation: op.Load) => {
-        this.stack.push(this.envStack.top()[operation.id.value])
+        console.log(util.inspect(this.variableEnv, false, null))
+        const value = this.variableEnv.reference(operation.id.value)
+        if (value !== null) {
+          this.stack.push(value)
+        }
       },
       LoadWithIndex: (operation: op.LoadWithIndex) => {
         const index = this.stack.pop()
-        const target = this.envStack.top()[operation.id.value]
+        const target = this.variableEnv.reference(operation.id.value)
 
         if (!this.isNumber(index)) {
           throw new Error('right or left must be number')
@@ -131,7 +137,7 @@ export class VirtualMachine {
         }
       },
       Ret: (operation: op.Ret) => {
-        this.envStack.pop()
+        this.variableEnv.pop()
         this.pcStack.pop()
       },
       Label: (operation: op.Label) => {},
@@ -150,11 +156,9 @@ export class VirtualMachine {
       })
     })
 
-    this.envStack.push({})
-
     this.pcStack.push([0, '$main'])
     while (true) {
-      const pc = this.pcStack.top()
+      let pc = this.pcStack.top()
       if (pc[0] >= this.functions[pc[1]].length) {
         break
       }
@@ -168,6 +172,7 @@ export class VirtualMachine {
         f(operation)
       }
 
+      pc = this.pcStack.top()
       pc[0]++
     }
 

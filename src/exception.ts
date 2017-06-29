@@ -23,3 +23,12 @@ export class SyntaxError extends Error {
     super(message)
   }
 }
+
+export class UndefinedError extends Error {
+  constructor(
+    name: string,
+    public location: parser.Location
+  ) {
+    super(`${name} is not defined`)
+  }
+}

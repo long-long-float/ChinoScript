@@ -29,13 +29,7 @@ export function evaluate(code: string, debug = false): Value.Value {
 
   if (debug) {
     console.log(util.inspect(ast, false, null))
-    console.log(util.inspect(ops, false, null))
-    Object.keys(ops).forEach((funName) => {
-      console.log(funName)
-      ops[funName].forEach((opr) => {
-        console.log(`  ${opr.constructor.name}`)
-      })
-    })
+    console.log(ops)
   }
 
   return run(ops)

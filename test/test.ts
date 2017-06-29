@@ -115,7 +115,7 @@ describe('ChinoScript', function() {
   describe('variable scope', function() {
     it('should allow read/write global variable', function() {
       assert.equal(e(`let a = 2;
-        void f() { a; }
+        int f() { a; }
         f();`), 2)
 
       assert.equal(e(`let a = 0;

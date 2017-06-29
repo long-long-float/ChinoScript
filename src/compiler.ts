@@ -85,6 +85,9 @@ export class Compiler implements ASTVisitor<void> {
     })
     node.body.accept(this)
 
+    // TODO: すでにRETがある場合は追加しないようにする
+    this.addOperation(new op.Ret())
+
     this.currentFunctionName = prevName
   }
   visitAssign(node: AST.Assign): void {

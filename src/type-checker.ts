@@ -1,16 +1,17 @@
 import { ASTVisitor } from './ast-visitor'
 import * as AST from './ast'
 import { Type } from './type'
-import { TypeError, SyntaxError } from './exception'
+import { TypeError, SyntaxError, UndefinedError } from './exception'
 import { Stack } from './stack'
 import { parser } from './parser'
+import { Environment } from './environment'
 
 export class TypeChecker implements ASTVisitor<Type> {
-  varTableStack = new Stack<{ [name: string]: Type }>()
+  variableEnv = new Environment<Type>()
   functions: { [name: string]: AST.FunctionDefinition } = {}
 
   check(ast: AST.ASTNode[]) {
-    this.varTableStack.push({})
+    this.variableEnv.push()
     ast.forEach((stmt) => stmt.accept(this))
   }
 
@@ -19,12 +20,9 @@ export class TypeChecker implements ASTVisitor<Type> {
     const variableType = node.usingTypeInference() ? initType : node.type
 
     const name = node.name.value
-    const table = this.varTableStack.top()
-    if (table.hasOwnProperty(name)) {
+    if (!this.variableEnv.define(name, variableType)) {
       throw new SyntaxError(`${name} has already defined`, node.name.location)
     }
-
-    table[name] = variableType
 
     if (!node.usingTypeInference()) {
       this.checkSatisfied(variableType, initType, node.location)
@@ -43,12 +41,12 @@ export class TypeChecker implements ASTVisitor<Type> {
   visitFunctionDefinition(node: AST.FunctionDefinition): Type {
     this.functions[node.name.value] = node
 
-    this.varTableStack.push({})
+    this.variableEnv.push()
 
-    node.args.forEach((arg) => this.varTableStack.top()[arg.name.value] = arg.type)
+    node.args.forEach((arg) => this.variableEnv.define(arg.name.value, arg.type))
     const resultType = node.body.accept(this)
 
-    this.varTableStack.pop()
+    this.variableEnv.pop()
 
     this.checkSatisfied(node.outputType, resultType, node.body.location)
 
@@ -75,8 +73,12 @@ export class TypeChecker implements ASTVisitor<Type> {
     return new Type('Tuple', [])
   }
   visitAssign(node: AST.Assign): Type {
-    const leftType = this.varTableStack.top()[node.left.name.value]
+    const leftType = this.variableEnv.reference(node.left.name.value)
     const rightType = node.right.accept(this)
+
+    if(leftType === null) {
+      throw new UndefinedError(node.left.name.value, node.location)
+    }
 
     if (node.left.index !== null) {
       this.checkSatisfied(new Type('Array', []), leftType, node.left.location, true)
@@ -84,7 +86,7 @@ export class TypeChecker implements ASTVisitor<Type> {
     } else {
       this.checkSatisfied(leftType, rightType, node.right.location)
     }
-    return leftType
+    return new Type('Tuple', [])
   }
   visitBinaryOp(node: AST.BinaryOp): Type {
     const leftType = node.left.accept(this)
@@ -135,11 +137,11 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitReferenceVariable(node: AST.ReferenceVariable): Type {
     const name = node.name.value
-    const table = this.varTableStack.top()
-    if (!table.hasOwnProperty(name)) {
-      throw new SyntaxError(`${name} is not defined`, node.location)
+    const type = this.variableEnv.reference(name)
+    if (type === null) {
+      throw new UndefinedError(name, node.location)
     }
-    return table[name]
+    return type
   }
   visitIfExpression(node: AST.IfExpression): Type {
     const condType = node.condition.accept(this)

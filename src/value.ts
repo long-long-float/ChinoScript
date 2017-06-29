@@ -1,8 +1,7 @@
 export type Value = Primitive | ChinoObject
-export type Primitive = Integer | ChinoString | Boolean
+export type Primitive = Integer | Boolean
 
 export type Integer = number
-export type ChinoString = string
 export type Boolean = boolean
 
 export class ChinoObject {
