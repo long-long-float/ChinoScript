@@ -112,50 +112,62 @@ describe('ChinoScript', function() {
     })
   })
 
-  it('should accept const variable definition', function () {
-    // var evaluator = new ChinoScript.Evaluator()
-    // var c = ChinoScript.Shortcuts
-    // evaluator.consts.add(c.type('Integer'), c.id('CONST_VALUE'), c.int(10))
+  describe('variable scope', function() {
+    it('should allow read/write global variable', function() {
+      assert.equal(e(`let a = 2;
+        void f() { a; }
+        f();`), 2)
 
-    // var result = ChinoScript.evaluate('return CONST_VALUE', evaluator)
-    // assert.equal(result.value, 10)
+      assert.equal(e(`let a = 0;
+        void f() { a = a + 1; }
+        f(); a;`), 1)
+    })
   })
 
-  it('should accept function definition', function () {
-    // var evaluator = new ChinoScript.Evaluator()
-    // var c = ChinoScript.Shortcuts
-    // var int = c.type('Integer')
-    // c.define_fun(evaluator, int, [int, int], 'add', function (x, y) {
-    //   return c.int(x.value + y.value)
-    // })
+  it('should accept const variable definition'/*, function () {
+    var evaluator = new ChinoScript.Evaluator()
+    var c = ChinoScript.Shortcuts
+    evaluator.consts.add(c.type('Integer'), c.id('CONST_VALUE'), c.int(10))
 
-    // var result = ChinoScript.evaluate('return add(1, 2)', evaluator)
-    // assert.equal(result.value, 3)
-  })
+    var result = ChinoScript.evaluate('return CONST_VALUE', evaluator)
+    assert.equal(result.value, 10)
+  }*/)
 
-  it('should work generic function', function () {
-    // var evaluator = new ChinoScript.Evaluator()
-    // var c = ChinoScript.Shortcuts
-    // var aryType = c.type('Array', [c.type('A')])
-    // c.define_fun(evaluator, c.type('Boolean'), [aryType, aryType], 'eq', function (ary1, ary2) {
-    //   if (ary1.value.length !== ary2.value.length) return new Values.Boolean(false)
+  it('should accept function definition'/*, function () {
+    var evaluator = new ChinoScript.Evaluator()
+    var c = ChinoScript.Shortcuts
+    var int = c.type('Integer')
+    c.define_fun(evaluator, int, [int, int], 'add', function (x, y) {
+      return c.int(x.value + y.value)
+    })
 
-    //   var ret = true
-    //   for (var i = 0 i < ary1.value.length i++) {
-    //     if (ary1.value[i].value !== ary2.value[i].value) {
-    //       ret = false
-    //       break
-    //     }
-    //   }
-    //   return new ChinoScript.Values.Boolean(ret)
-    // }, ['A'])
+    var result = ChinoScript.evaluate('return add(1, 2)', evaluator)
+    assert.equal(result.value, 3)
+  }*/)
 
-    // var result = ChinoScript.evaluate('return eq(int[]{1, 2, 3}, int[]{1, 2, 3})', evaluator)
-    // assert.equal(result.value, true)
+  it('should work generic function'/*, function () {
+    var evaluator = new ChinoScript.Evaluator()
+    var c = ChinoScript.Shortcuts
+    var aryType = c.type('Array', [c.type('A')])
+    c.define_fun(evaluator, c.type('Boolean'), [aryType, aryType], 'eq', function (ary1, ary2) {
+      if (ary1.value.length !== ary2.value.length) return new Values.Boolean(false)
 
-    // result = ChinoScript.evaluate('return eq(int[]{1, 2, 3}, int[]{1, 3, 2})', evaluator)
-    // assert.equal(result.value, false)
+      var ret = true
+      for (var i = 0 i < ary1.value.length i++) {
+        if (ary1.value[i].value !== ary2.value[i].value) {
+          ret = false
+          break
+        }
+      }
+      return new ChinoScript.Values.Boolean(ret)
+    }, ['A'])
 
-    // assert.throws(() => ChinoScript.evaluate("return index(int[]{1, 2, 3}, char[]{'1', '2', '3' })", evaluator))
-  })
+    var result = ChinoScript.evaluate('return eq(int[]{1, 2, 3}, int[]{1, 2, 3})', evaluator)
+    assert.equal(result.value, true)
+
+    result = ChinoScript.evaluate('return eq(int[]{1, 2, 3}, int[]{1, 3, 2})', evaluator)
+    assert.equal(result.value, false)
+
+    assert.throws(() => ChinoScript.evaluate("return index(int[]{1, 2, 3}, char[]{'1', '2', '3' })", evaluator))
+  }*/)
 })
