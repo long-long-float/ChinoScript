@@ -127,7 +127,9 @@ export class Compiler implements ASTVisitor<void> {
     node.left.accept(this)
     node.right.accept(this)
     if (op.isArithmeticOperation(node.op)) {
-      this.addOperation(new op.IArith(node.op as op.ArithmeticOperation))
+      this.addOperation(new op.IArith(node.op))
+    } else if (op.isLogicalOperation(node.op)) {
+      this.addOperation(new op.BLogic(node.op))
     } else {
       this.addOperation(new op.ICmp(node.op as op.PredicationalOperation))
     }

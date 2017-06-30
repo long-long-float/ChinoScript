@@ -58,9 +58,14 @@ export class LoadWithIndex extends Operation {
 
 export type ArithmeticOperation = '+' | '-' | '*' | '/' | '%'
 export type PredicationalOperation = '<=' | '>=' | '<' | '>' | '==' | '!='
+export type LogicalOperation = '||' | '&&'
 
-export function isArithmeticOperation(op: string): boolean {
+export function isArithmeticOperation(op: string): op is ArithmeticOperation {
   return op === '+' || op === '-' || op === '*' || op === '/' || op === '%'
+}
+
+export function isLogicalOperation(op: string): op is LogicalOperation {
+  return op === '||' || op === '&&'
 }
 
 export class IArith extends Operation {
@@ -74,6 +79,14 @@ export class IArith extends Operation {
 export class ICmp extends Operation {
   constructor(
     public operation: PredicationalOperation
+  ) {
+    super()
+  }
+}
+
+export class BLogic extends Operation {
+  constructor(
+    public operation: LogicalOperation
   ) {
     super()
   }

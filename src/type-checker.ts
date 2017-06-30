@@ -12,6 +12,11 @@ export class TypeChecker implements ASTVisitor<Type> {
 
   check(ast: AST.ASTNode[]) {
     this.variableEnv.push()
+    ast.forEach((stmt) => {
+      if (stmt instanceof AST.FunctionDefinition) {
+        this.functions[stmt.name.value] = stmt
+      }
+    })
     ast.forEach((stmt) => stmt.accept(this))
   }
 
@@ -39,8 +44,6 @@ export class TypeChecker implements ASTVisitor<Type> {
     return new Type('Tuple', [])
   }
   visitFunctionDefinition(node: AST.FunctionDefinition): Type {
-    this.functions[node.name.value] = node
-
     this.variableEnv.push()
 
     node.args.forEach((arg) => this.variableEnv.define(arg.name.value, arg.type))
