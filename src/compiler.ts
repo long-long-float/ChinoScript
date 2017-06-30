@@ -176,6 +176,9 @@ export class Compiler implements ASTVisitor<void> {
   visitCharLiteral(node: AST.CharLiteral): void {
     this.addOperation(new op.Push(node.value.charCodeAt(0)))
   }
+  visitBooleanLiteral(node: AST.BooleanLiteral): void {
+    this.addOperation(new op.Push(node.value))
+  }
   visitArrayLiteral(node: AST.ArrayLiteral): void {
     node.values.forEach((value) => value.accept(this))
     this.addOperation(new op.CallFunction('buildArray', node.values.length))

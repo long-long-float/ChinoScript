@@ -194,7 +194,7 @@ factor
   / integer
   / string
   / char
-  // / boolean
+  / boolean
   / id:identifier index:(_ "[" _ expression _ "]" _)?
     { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
   / array
@@ -206,7 +206,11 @@ string
 
 char
   = "'" value:. "'"
-    { return new AST.CharLiteral(value); }
+    { return new AST.CharLiteral(value, location()); }
+
+boolean
+  = value:("true" / "false")
+    { return new AST.BooleanLiteral(value === 'true', location()); }
 
 integer
   // TODO: 負数に対応

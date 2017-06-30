@@ -98,8 +98,11 @@ export class TypeChecker implements ASTVisitor<Type> {
     if (node.type === AST.BinaryOpType.Logic) {
       expectedType = new Type('Boolean', [])
     } else {
-      // TODO: ==, !=はInteger以外も通すようにする
-      expectedType = new Type('Integer', [])
+      if (node.op === '==' || node.op === '!=') {
+        expectedType = rightType
+      } else {
+        expectedType = new Type('Integer', [])
+      }
     }
     this.checkSatisfied(expectedType, leftType, node.location)
 
@@ -141,7 +144,13 @@ export class TypeChecker implements ASTVisitor<Type> {
     if (type === null) {
       throw new UndefinedError(name, node.location)
     }
-    return type
+
+    if (node.index !== null) {
+      this.checkSatisfied(new Type('Array', []), type, node.location, true)
+      return type.innerTypes[0]
+    } else {
+      return type
+    }
   }
   visitIfExpression(node: AST.IfExpression): Type {
     const condType = node.condition.accept(this)
@@ -161,6 +170,9 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitIntegerLiteral(node: AST.IntegerLiteral): Type {
     return new Type('Integer', [])
+  }
+  visitBooleanLiteral(node: AST.BooleanLiteral): Type {
+    return new Type('Boolean', [])
   }
   visitCharLiteral(node: AST.CharLiteral): Type {
     return new Type('Char', [])

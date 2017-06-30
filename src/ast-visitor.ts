@@ -14,6 +14,7 @@ export interface ASTVisitor<T> {
   visitReferenceVariable(node: AST.ReferenceVariable): T
   visitIfExpression(node: AST.IfExpression): T
   visitIntegerLiteral(node: AST.IntegerLiteral): T
+  visitBooleanLiteral(node: AST.BooleanLiteral): T
   visitCharLiteral(node: AST.CharLiteral): T
   visitArrayLiteral(node: AST.ArrayLiteral): T
   visitBlock(node: AST.Block): T

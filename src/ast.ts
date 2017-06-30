@@ -272,6 +272,19 @@ export class IntegerLiteral extends Expression {
   }
 }
 
+export class BooleanLiteral extends Expression {
+  constructor(
+    public value: boolean,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitBooleanLiteral(this)
+  }
+}
+
 export class CharLiteral extends Expression {
   constructor(
     public value: string,
