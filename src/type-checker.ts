@@ -8,6 +8,8 @@ import { Environment } from './environment'
 
 export class TypeChecker implements ASTVisitor<Type> {
   variableEnv = new Environment<Type>()
+
+  currentFunctionName = ''
   functions: { [name: string]: AST.FunctionDefinition } = {}
 
   check(ast: AST.ASTNode[]) {
@@ -36,8 +38,9 @@ export class TypeChecker implements ASTVisitor<Type> {
     return new Type('Tuple', [])
   }
   visitReturnStatement(node: AST.ReturnStatement): Type {
-    // TODO: 関数の最後以外のreturnにも対応
-    return node.value.accept(this)
+    const retType = node.value.accept(this)
+    this.checkSatisfied(this.functions[this.currentFunctionName].outputType, retType, node.location)
+    return new Type('Tuple', [])
   }
   visitBreakStatement(node: AST.BreakStatement): Type {
     // TODO: ループ内でしか使えないようにチェック
@@ -47,13 +50,18 @@ export class TypeChecker implements ASTVisitor<Type> {
     this.variableEnv.push()
 
     node.args.forEach((arg) => this.variableEnv.define(arg.name.value, arg.type))
-    const resultType = node.body.accept(this)
+
+    const prevName = this.currentFunctionName
+    this.currentFunctionName = node.name.value
+
+    // TODO: returnするパスがあるかどうかチェック
+    node.body.accept(this)
+
+    this.currentFunctionName = prevName
 
     this.variableEnv.pop()
 
-    this.checkSatisfied(node.outputType, resultType, node.body.location)
-
-    return resultType
+    return node.outputType
   }
   visitForStatement(node: AST.ForStatement): Type {
     node.init.accept(this)
