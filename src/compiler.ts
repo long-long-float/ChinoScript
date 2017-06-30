@@ -38,7 +38,7 @@ export class Compiler implements ASTVisitor<void> {
 
   visitDefineVariable(node: AST.DefineVariable): void {
     node.initialValue.accept(this)
-    if (this.currentFunctionName === DefaultFunName) { // global variable
+    if (this.currentFunctionName === DefaultFunName && this.variableEnv.count() === 1) { // global variable
       const id = this.defineGlobalVariable(node.name.value)
       this.addOperation(new op.Store(id, true))
     } else { // local variable
@@ -95,8 +95,6 @@ export class Compiler implements ASTVisitor<void> {
     this.functions[this.currentFunctionName] = []
     this.variableCounts[this.currentFunctionName] = 0
 
-    this.variableEnv.push()
-
     node.args.forEach((arg) => {
       const id = this.defineVariable(arg.name.value)
       this.addOperation(new op.Store(id, false))
@@ -105,8 +103,6 @@ export class Compiler implements ASTVisitor<void> {
 
     // TODO: すでにRETがある場合は追加しないようにする
     this.addOperation(new op.Ret())
-
-    this.variableEnv.pop()
 
     this.currentFunctionName = prevName
   }
@@ -186,7 +182,9 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(new op.CallFunction('buildArray', node.values.length))
   }
   visitBlock(node: AST.Block): void {
+    this.variableEnv.push()
     node.statemetns.forEach((stmt) => stmt.accept(this))
+    this.variableEnv.pop()
   }
   visitIdentifier(node: AST.Identifier): void {
     throw new Error("Method not implemented.");

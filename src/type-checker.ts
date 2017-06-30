@@ -188,7 +188,10 @@ export class TypeChecker implements ASTVisitor<Type> {
     return node.type
   }
   visitBlock(node: AST.Block): Type {
+    this.variableEnv.push()
     const types = node.statemetns.map((stmt) => stmt.accept(this))
+    this.variableEnv.pop()
+
     return types[types.length - 1]
   }
   visitIdentifier(node: AST.Identifier): Type {

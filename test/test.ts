@@ -127,6 +127,30 @@ describe('ChinoScript', function() {
         void f() { a = a + 1; }
         f(); a;`), 1)
     })
+
+    it('should allow use block local variable', function() {
+      assert.equal(e(`let a = 1;
+        if (a == 1) {
+          let r = 2;
+          r;
+        } else {
+          let r = 3;
+          r;
+        };
+      `), 2)
+
+      const src = `let a = 1;
+        if (a == 1) {
+          let a = 2;
+          a;
+        } else {
+          let a = 3;
+          a;
+        };`
+
+      assert.equal(e(src), 2)
+      assert.equal(e(src + 'a;'), 1)
+    })
   })
 
   it('should accept const variable definition'/*, function () {

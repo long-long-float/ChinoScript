@@ -22,4 +22,8 @@ export class Stack<T> {
   bottom(): T {
     return this._values[0]
   }
+
+  count(): number {
+    return this._values.length
+  }
 }

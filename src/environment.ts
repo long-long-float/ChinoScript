@@ -42,4 +42,8 @@ export class Environment<T> {
       return null
     }
   }
+
+  count(): number {
+    return this.tableStack.count()
+  }
 }
