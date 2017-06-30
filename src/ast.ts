@@ -110,6 +110,8 @@ export class FunctionDefinition extends Statement {
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitFunctionDefinition(this)
   }
+
+  isGenerics(): boolean { return this.genericTypes.length > 0; }
 }
 
 export class ArgumentDefinition extends ASTNode {

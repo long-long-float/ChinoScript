@@ -47,21 +47,13 @@ export class TypeChecker implements ASTVisitor<Type> {
     return new Type('Tuple', [])
   }
   visitFunctionDefinition(node: AST.FunctionDefinition): Type {
-    this.variableEnv.push()
+    if (node.isGenerics()) { // non generics function
+      this.defineFunction(node, null)
+    } else { // gengerics function
+      // do nothing
+    }
 
-    node.args.forEach((arg) => this.variableEnv.define(arg.name.value, arg.type))
-
-    const prevName = this.currentFunctionName
-    this.currentFunctionName = node.name.value
-
-    // TODO: returnするパスがあるかどうかチェック
-    node.body.accept(this)
-
-    this.currentFunctionName = prevName
-
-    this.variableEnv.pop()
-
-    return node.outputType
+    return new Type('Tuple', [])
   }
   visitForStatement(node: AST.ForStatement): Type {
     node.init.accept(this)
@@ -151,10 +143,27 @@ export class TypeChecker implements ASTVisitor<Type> {
       if (target.args.length !== node.args.length) {
         throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.args.length})`, node.location)
       }
-      target.args.forEach((arg, i) => {
-        const a = node.args[i].accept(this)
-        this.checkSatisfied(arg.type, a, node.args[i].location)
+
+      const genericsTable: { [name: string]: Type } = {}
+      target.args.forEach((expected, i) => {
+        const arg = node.args[i].accept(this)
+
+        if (target.isGenerics() && target.genericTypes.some((n) => n.value === expected.type.name)) {
+          const genericsName = expected.type.name
+          if (!genericsTable.hasOwnProperty(genericsName)) {
+            genericsTable[genericsName] = arg
+          }
+
+          this.checkSatisfied(genericsTable[genericsName], arg, node.args[i].location)
+        } else {
+          this.checkSatisfied(expected.type, arg, node.args[i].location)
+        }
       })
+
+      if (target.isGenerics()) {
+        this.defineFunction(target, genericsTable)
+      }
+
       return target.outputType
     }
   }
@@ -213,6 +222,26 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitIdentifier(node: AST.Identifier): Type {
     throw new Error("Method not implemented.");
+  }
+
+  private defineFunction(node: AST.FunctionDefinition, genericsTable: { [name: string]: Type } | null) {
+    this.variableEnv.push()
+
+    node.args.forEach((arg) => {
+      const argType = genericsTable !== null ? genericsTable[arg.type.name] : arg.type
+      console.log(genericsTable, arg, argType)
+      this.variableEnv.define(arg.name.value, argType)
+    })
+
+    const prevName = this.currentFunctionName
+    this.currentFunctionName = node.name.value
+
+    // TODO: returnするパスがあるかどうかチェック
+    node.body.accept(this)
+
+    this.currentFunctionName = prevName
+
+    this.variableEnv.pop()
   }
 
   private checkSatisfied(expected: Type, actual: Type, location: parser.Location, shallow = false) {
