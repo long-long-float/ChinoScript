@@ -126,6 +126,15 @@ export class TypeChecker implements ASTVisitor<Type> {
       // TODO: check
       node.args[0].accept(this)
       return new Type('Tuple', [])
+
+    // TODO: 下の関数を外から定義できるようにする
+    } else if (node.name.value === 'ctoi') {
+      return new Type('Integer', [])
+    } else if (node.name.value === 'len') {
+      return new Type('Integer', [])
+    } else if (node.name.value === 'append') {
+      return new Type('Tuple', [])
+
     } else {
       if (!this.functions.hasOwnProperty(node.name.value)) {
         throw new SyntaxError(`${node.name.value} is not defined`, node.location)

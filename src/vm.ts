@@ -34,6 +34,27 @@ export class VirtualMachine {
             values.push(this.stack.pop())
           }
           this.stack.push(new Value.ChinoArray(values.reverse(), len))
+
+        // TODO: 下の関数を外から定義できるようにする
+        } else if (operation.name === 'ctoi') {
+          // do nothing
+        } else if (operation.name === 'len') {
+          const arg = this.stack.pop()
+          if (!(arg instanceof Value.ChinoArray)) {
+            throw new Error('value must be array')
+          }
+          const t = arg as Value.ChinoArray
+          this.stack.push(t.length)
+        } else if (operation.name === 'append') {
+          const value = this.stack.pop()
+          const arg = this.stack.pop()
+          if (!(arg instanceof Value.ChinoArray)) {
+            throw new Error('value must be array')
+          }
+          const t = arg as Value.ChinoArray
+          t.values.push(value)
+          t.length++
+
         } else {
           if (!this.functions.hasOwnProperty(operation.name)) {
             throw new Error(`unknown function ${operation.name}`)
