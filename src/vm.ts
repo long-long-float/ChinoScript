@@ -19,11 +19,11 @@ export class VirtualMachine {
 
   private pcStack = new Stack<[number, string]>()
 
-  private table: any
+  private table: any[]
 
   constructor() {
-    this.table = {
-      CallFunction: (operation: op.CallFunction) => {
+    this.table = [
+      'CallFunction', (operation: op.CallFunction) => {
         if (operation.name === 'puts') {
           const value = this.stack.pop()
           console.log(valueToString(value))
@@ -64,10 +64,10 @@ export class VirtualMachine {
           this.pcStack.push([-1, operation.name])
         }
       },
-      Push: (operation: op.Push) => {
+      'Push', (operation: op.Push) => {
         this.stack.push(operation.value)
       },
-      Store: (operation: op.Store) => {
+      'Store', (operation: op.Store) => {
         const value = this.stack.pop()
         if (operation.global) {
           this.globalVariableEnv[operation.id] = value
@@ -75,7 +75,7 @@ export class VirtualMachine {
           this.variableEnv.store(operation.id.toString(), value)
         }
       },
-      StoreWithIndex: (operation: op.StoreWithIndex) => {
+      'StoreWithIndex', (operation: op.StoreWithIndex) => {
         const index = this.stack.pop()
         const value = this.stack.pop()
 
@@ -96,7 +96,7 @@ export class VirtualMachine {
 
         t.values[index] = value
       },
-      Load: (operation: op.Load) => {
+      'Load', (operation: op.Load) => {
         const value = operation.global ?
           this.globalVariableEnv[operation.id] :
           this.variableEnv.reference(operation.id.toString())
@@ -104,7 +104,7 @@ export class VirtualMachine {
           this.stack.push(value)
         }
       },
-      LoadWithIndex: (operation: op.LoadWithIndex) => {
+      'LoadWithIndex', (operation: op.LoadWithIndex) => {
         const index = this.stack.pop()
         const target = operation.global ?
           this.globalVariableEnv[operation.id] :
@@ -123,7 +123,7 @@ export class VirtualMachine {
 
         this.stack.push(t.values[index])
       },
-      IArith: (operation: op.IArith) => {
+      'IArith', (operation: op.IArith) => {
         const right = this.stack.pop()
         const left = this.stack.pop()
 
@@ -142,7 +142,7 @@ export class VirtualMachine {
         }
         this.stack.push(Math.floor(result))
       },
-      ICmp: (operation: op.ICmp) => {
+      'ICmp', (operation: op.ICmp) => {
         const right = this.stack.pop()
         const left = this.stack.pop()
         let result: Value.Boolean
@@ -157,29 +157,29 @@ export class VirtualMachine {
         }
         this.stack.push(result)
       },
-      Jump: (operation: op.Jump) => {
+      'Jump', (operation: op.Jump) => {
         this.pcStack.top()[0] = this.labelTable[operation.destination]
       },
-      JumpIf: (operation: op.JumpIf) => {
+      'JumpIf', (operation: op.JumpIf) => {
         const cond = this.stack.pop()
         // TODO: condの型を決定させる
         if (cond === true) {
           this.pcStack.top()[0] = this.labelTable[operation.destination]
         }
       },
-      JumpUnless: (operation: op.JumpUnless) => {
+      'JumpUnless', (operation: op.JumpUnless) => {
         const cond = this.stack.pop()
         // TODO: condの型を決定させる
         if (cond !== true) {
           this.pcStack.top()[0] = this.labelTable[operation.destination]
         }
       },
-      Ret: (operation: op.Ret) => {
+      'Ret', (operation: op.Ret) => {
         this.variableEnv.pop()
         this.pcStack.pop()
       },
-      Label: (operation: op.Label) => {},
-    }
+      'Label', (operation: op.Label) => {},
+    ]
   }
 
   run(_functions: FunctionTable): Value.Value {
@@ -191,6 +191,8 @@ export class VirtualMachine {
         if (operation instanceof op.Label) {
           this.labelTable[operation.id] = i
         }
+
+        operation.opId = this.table.findIndex((val) => operation.constructor.name === val) + 1
       })
     })
 
@@ -202,7 +204,7 @@ export class VirtualMachine {
       }
       const operation = this.functions[pc[1]][pc[0]]
 
-      const f = this.table[operation.constructor.name]
+      const f = this.table[operation.opId]
       if (f === undefined) {
         throw new Error(`unknown operation ${operation.constructor.name}`)
       } else {

@@ -1,7 +1,9 @@
 import * as AST from './ast'
 import * as Value from './value'
 
-export class Operation { }
+export class Operation {
+  public opId: number
+}
 
 export class CallFunction extends Operation {
   constructor(
