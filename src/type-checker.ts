@@ -148,7 +148,7 @@ export class TypeChecker implements ASTVisitor<Type> {
       target.args.forEach((expected, i) => {
         const arg = node.args[i].accept(this)
 
-        if (target.isGenerics() && target.genericTypes.some((n) => n.value === expected.type.name)) {
+        if (target.isGenerics() && target.genericTypes.some((n) => expected.type.includes(n.value))) {
           const genericsName = expected.type.name
           if (!genericsTable.hasOwnProperty(genericsName)) {
             genericsTable[genericsName] = arg
@@ -229,7 +229,6 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     node.args.forEach((arg) => {
       const argType = genericsTable !== null ? genericsTable[arg.type.name] : arg.type
-      console.log(genericsTable, arg, argType)
       this.variableEnv.define(arg.name.value, argType)
     })
 

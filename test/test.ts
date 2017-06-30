@@ -48,6 +48,28 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('generics type', function() {
+    const eq = 'bool eq<A>(A x, A y) { return x == y; }'
+    const arrayEq = `bool arrayEq<A>(A[] x, A[] y) {
+          if (len(x) != len(y)) return false;;
+
+          for (int i = 0; i < len(x); i += 1) {
+            if (x[i] != y[i]) return false;;
+          }
+          return true;
+        }`
+
+    it('should throw type error', function() {
+      assert.throw(() => e(`${eq} eq(1, 'A');`))
+      assert.throw(() => e(`${arrayEq} arrayEq(int[]{1, 2, 3}, "123");`))
+    })
+
+    it('should execute correctly', function() {
+      assert.equal(e(`${eq} eq(1, 1);`), true)
+      assert.equal(e(`${arrayEq} arrayEq(int[]{1, 2, 3}, int[]{1, 2, 3});`), true)
+    })
+  })
+
   describe('string', function() {
     it('is treated as char array', function() {
       assert.doesNotThrow(() => e('char[] str = "hello";'))

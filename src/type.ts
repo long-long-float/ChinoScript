@@ -28,4 +28,12 @@ export class Type {
   is(name: string): boolean {
     return this.name === name
   }
+
+  includes(name: string): boolean {
+    if (this.name === name) {
+      return true
+    } else {
+      return this.innerTypes.some((type) => type.includes(name))
+    }
+  }
 }
