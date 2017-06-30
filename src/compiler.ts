@@ -87,6 +87,8 @@ export class Compiler implements ASTVisitor<void> {
     node.block.accept(this)
     this.loopEndLabelStack.pop()
 
+    this.addOperation(new op.Jump(headLabel.id))
+
     this.addOperation(tailLabel)
   }
   visitFunctionDefinition(node: AST.FunctionDefinition): void {

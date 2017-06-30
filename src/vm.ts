@@ -10,7 +10,7 @@ import * as util from 'util'
 export class VirtualMachine {
   private stack = new Stack<Value.Value>()
   private variableEnv = new Environment<Value.Value>()
-  private globalVariableEnv = new Environment<Value.Value>()
+  private globalVariableEnv: Value.Value[] = []
 
   private functions: FunctionTable
 
@@ -70,7 +70,7 @@ export class VirtualMachine {
       Store: (operation: op.Store) => {
         const value = this.stack.pop()
         if (operation.global) {
-          this.globalVariableEnv.store(operation.id.toString(), value)
+          this.globalVariableEnv[operation.id] = value
         } else {
           this.variableEnv.store(operation.id.toString(), value)
         }
@@ -80,7 +80,7 @@ export class VirtualMachine {
         const value = this.stack.pop()
 
         const target = operation.global ?
-          this.globalVariableEnv.reference(operation.id.toString()) :
+          this.globalVariableEnv[operation.id] :
           this.variableEnv.reference(operation.id.toString())
 
         if (!this.isNumber(index)) {
@@ -98,7 +98,7 @@ export class VirtualMachine {
       },
       Load: (operation: op.Load) => {
         const value = operation.global ?
-          this.globalVariableEnv.reference(operation.id.toString()) :
+          this.globalVariableEnv[operation.id] :
           this.variableEnv.reference(operation.id.toString())
         if (value !== null) {
           this.stack.push(value)
@@ -107,7 +107,7 @@ export class VirtualMachine {
       LoadWithIndex: (operation: op.LoadWithIndex) => {
         const index = this.stack.pop()
         const target = operation.global ?
-          this.globalVariableEnv.reference(operation.id.toString()) :
+          this.globalVariableEnv[operation.id] :
           this.variableEnv.reference(operation.id.toString())
 
         if (!this.isNumber(index)) {
