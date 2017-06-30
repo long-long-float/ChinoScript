@@ -136,20 +136,15 @@ export class VirtualMachine {
         }
         this.stack.push(result)
       },
-      BLogic: (operation: op.BLogic) => {
-        const right = this.stack.pop()
-        const left = this.stack.pop()
-        let result: Value.Boolean
-        switch (operation.operation) {
-          case '&&': result = !!(left && right); break
-          case '||': result = !!(left || right); break
-          default: throw new Error(`unknown operation ${operation.operation}`)
-        }
-        this.stack.push(result)
-
-      },
       Jump: (operation: op.Jump) => {
         this.pcStack.top()[0] = this.labelTable[operation.destination]
+      },
+      JumpIf: (operation: op.JumpIf) => {
+        const cond = this.stack.pop()
+        // TODO: condの型を決定させる
+        if (cond === true) {
+          this.pcStack.top()[0] = this.labelTable[operation.destination]
+        }
       },
       JumpUnless: (operation: op.JumpUnless) => {
         const cond = this.stack.pop()

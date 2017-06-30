@@ -120,13 +120,42 @@ export class Compiler implements ASTVisitor<void> {
     }
   }
   visitBinaryOp(node: AST.BinaryOp): void {
-    node.left.accept(this)
-    node.right.accept(this)
     if (op.isArithmeticOperation(node.op)) {
+      node.left.accept(this)
+      node.right.accept(this)
       this.addOperation(new op.IArith(node.op))
     } else if (op.isLogicalOperation(node.op)) {
-      this.addOperation(new op.BLogic(node.op))
+      const elseLabel = this.createLabel()
+      const endLabel = this.createLabel()
+
+      // A && B
+      //
+      // A
+      // JumpUnless else
+      // B
+      // Jump end
+      // else:
+      // push false
+      // end:
+
+      node.left.accept(this)
+
+      if (node.op === '&&') {
+        this.addOperation(new op.JumpUnless(elseLabel.id))
+      } else { // '||'
+        this.addOperation(new op.JumpIf(elseLabel.id))
+      }
+
+      node.right.accept(this)
+      this.addOperation(new op.Jump(endLabel.id))
+
+      this.addOperation(elseLabel)
+      this.addOperation(new op.Push(node.op !== '&&'))
+
+      this.addOperation(endLabel)
     } else {
+      node.left.accept(this)
+      node.right.accept(this)
       this.addOperation(new op.ICmp(node.op as op.PredicationalOperation))
     }
   }

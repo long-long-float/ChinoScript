@@ -84,15 +84,15 @@ export class ICmp extends Operation {
   }
 }
 
-export class BLogic extends Operation {
+export class Jump extends Operation {
   constructor(
-    public operation: LogicalOperation
+    public destination: number
   ) {
     super()
   }
 }
 
-export class Jump extends Operation {
+export class JumpIf extends Operation {
   constructor(
     public destination: number
   ) {
