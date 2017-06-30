@@ -27,6 +27,14 @@
     return binary_op_intr(left.concat(rest));
   }
 
+  function combined_binary_op(left, rest) {
+    const op = rest[1].charAt(0);
+    const rightRef = new AST.ReferenceVariable(left.name, left.index);
+    const right = new AST.BinaryOp(rightRef, op, rest[3], location());
+
+    return new AST.Assign(left, right, location());
+  }
+
   function unary_op_f(op, right) {
     return new AST.UnaryOpFront(op, right, location());
   }
@@ -141,6 +149,8 @@ while_stmt
 expression
   = left:lh_expression rest:(_ "=" _ term0)+
     { return binary_op(left, rest); }
+  / left:lh_expression rest:(_ ("+=" / "-=" / "*=" / "/=" / "%=") _ term0)
+    { return combined_binary_op(left, rest); }
   / term:term0
 
 lh_expression

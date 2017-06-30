@@ -69,6 +69,11 @@ describe('ChinoScript', function() {
       assert.equal(e('1 + 2 * 3 + 4;'), 11)
       assert.equal(e('(1 + 2) * (3 + 4);'), 21)
     })
+
+    it('should accept combined operator', function() {
+      assert.equal(e('let a = 0; a += 1; a;'), 1)
+      assert.equal(e('let a = 2; a *= 3; a;'), 6)
+    })
   })
 
   describe('array', function() {
