@@ -150,6 +150,7 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     if (node.index !== null) {
       this.checkSatisfied(new Type('Array', []), type, node.location, true)
+      node.index.accept(this)
       return type.innerTypes[0]
     } else {
       return type

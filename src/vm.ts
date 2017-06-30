@@ -190,7 +190,7 @@ export class VirtualMachine {
       if (f === undefined) {
         throw new Error(`unknown operation ${operation.constructor.name}`)
       } else {
-        // console.log(`${pc[0]}@${pc[1]} ${operation.constructor.name}`)
+        // console.log(`${pc[0]}@${pc[1]} ${operation.constructor.name}`, this.stack)
         f(operation)
       }
 
