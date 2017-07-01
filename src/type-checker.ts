@@ -38,7 +38,12 @@ export class TypeChecker implements ASTVisitor<Type> {
     return new Type('Tuple', [])
   }
   visitReturnStatement(node: AST.ReturnStatement): Type {
-    const retType = node.value.accept(this)
+    const retType = node.value !== null ? node.value.accept(this) : new Type('Tuple', [])
+    this.checkSatisfied(this.functions[this.currentFunctionName].outputType, retType, node.location)
+    return new Type('Tuple', [])
+  }
+  visitYieldStatement(node: AST.YieldStatement): Type {
+    const retType = node.value !== null ? node.value.accept(this) : new Type('Tuple', [])
     this.checkSatisfied(this.functions[this.currentFunctionName].outputType, retType, node.location)
     return new Type('Tuple', [])
   }
@@ -134,6 +139,10 @@ export class TypeChecker implements ASTVisitor<Type> {
       return new Type('Integer', [])
     } else if (node.name.value === 'append') {
       return new Type('Tuple', [])
+    } else if (node.name.value === 'next') {
+      const arg = node.args[0].accept(this)
+      this.checkSatisfied(new Type('Generator', []), arg, node.args[0].location, true)
+      return arg.innerTypes[0]
 
     } else {
       if (!this.functions.hasOwnProperty(node.name.value)) {

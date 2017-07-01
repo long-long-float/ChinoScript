@@ -43,13 +43,27 @@ export class DefineVariable extends Statement {
 
 export class ReturnStatement extends Statement {
   constructor(
-    public value: Expression
+    public value: Expression | null,
+    location: parser.Location
   ) {
-    super(value.location)
+    super(location)
   }
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitReturnStatement(this)
+  }
+}
+
+export class YieldStatement extends Statement {
+  constructor(
+    public value: Expression | null,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitYieldStatement(this)
   }
 }
 
@@ -102,9 +116,14 @@ export class FunctionDefinition extends Statement {
     public genericTypes: Identifier[],
     public args: ArgumentDefinition[],
     public body: Block,
+    private modifier: 'gen' | null,
     location: parser.Location
   ) {
     super(location)
+
+    if (this.modifier === 'gen') {
+      this.outputType = new Type('Generator', [this.outputType])
+    }
   }
 
   accept<T>(visitor: ASTVisitor<T>): T {
@@ -112,6 +131,7 @@ export class FunctionDefinition extends Statement {
   }
 
   isGenerics(): boolean { return this.genericTypes.length > 0; }
+  isGenerator(): boolean { return this.modifier === 'gen' }
 }
 
 export class ArgumentDefinition extends ASTNode {

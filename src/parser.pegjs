@@ -106,12 +106,12 @@ top_statement
 
 def_fun
   = type:type _ name:identifier _ generic_types:( "<" identifier _ :("," _ identifier _)* ">" )? _
-    "(" _  fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")" _ block:block
+    "(" _  fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")" _ modifier:"gen"? _ block:block
     {
       const gt = filter(flatten(generic_types || []))
       gt.shift()
       gt.pop()
-      return new AST.FunctionDefinition(type, name, gt, args(fst_arg, rest_args), block, location());
+      return new AST.FunctionDefinition(type, name, gt, args(fst_arg, rest_args), block, modifier, location());
     }
 
 def_arg
@@ -122,6 +122,7 @@ statement
   = def_var
   / return_stmt
   / break_stmt
+  / yield_stmt
   / for_stmt
   / while_stmt
   / expr:expression _ ";" { return expr }
@@ -132,11 +133,15 @@ def_var
 
 return_stmt
   = "return" _ value:expression? _ ";"
-    { return new AST.ReturnStatement(value); }
+    { return new AST.ReturnStatement(value, location()); }
 
 break_stmt
   = "break" _ ";"
     { return new AST.BreakStatement(location()); }
+
+yield_stmt
+  = "yield" _ value:expression? _ ";"
+    { return new AST.YieldStatement(value); }
 
 for_stmt
   = "for" _ "(" _ init:(def_var / expression _ ";")  _ cond:expression _ ";" _ update:expression _ ")" _ block:block

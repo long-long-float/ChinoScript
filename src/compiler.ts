@@ -47,8 +47,12 @@ export class Compiler implements ASTVisitor<void> {
     }
   }
   visitReturnStatement(node: AST.ReturnStatement): void {
-    node.value.accept(this)
+    if (node.value !== null) node.value.accept(this)
     this.addOperation(new op.Ret())
+  }
+  visitYieldStatement(node: AST.YieldStatement): void {
+    if (node.value !== null) node.value.accept(this)
+    this.addOperation(new op.YieldRet())
   }
   visitBreakStatement(node: AST.BreakStatement): void {
     const label = this.loopEndLabelStack.top()

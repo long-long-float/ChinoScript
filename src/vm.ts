@@ -193,6 +193,9 @@ export class VirtualMachine {
         }
 
         operation.opId = this.table.findIndex((val) => operation.constructor.name === val) + 1
+        if (operation.opId === 0) {
+          throw new Error(`unknown operation ${operation.constructor.name}`)
+        }
       })
     })
 

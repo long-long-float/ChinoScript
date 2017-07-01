@@ -1,10 +1,10 @@
 int counter() gen {
   for (int i = 0; true; i += 1) {
-    yield i
+    yield i;
   }
 }
 
-let c = counter()
-puts(next(c))
-puts(next(c))
-puts(next(c))
+let c = counter();
+puts(next(c));
+puts(next(c));
+puts(next(c));
