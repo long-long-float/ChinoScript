@@ -19,6 +19,14 @@ export function valueToString(value: Value.Value): string {
   }
 }
 
+export function valueToArray(value: Value.Value): Value.Value[] | undefined {
+  if (value instanceof Value.ChinoArray) {
+    return value.values
+  } else {
+    return undefined
+  }
+}
+
 export function evaluate(code: string, debug = false): Value.Value {
   const ast = parse(code)
 

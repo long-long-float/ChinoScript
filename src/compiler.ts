@@ -14,6 +14,8 @@ export class Compiler implements ASTVisitor<void> {
   private functions: FunctionTable = { [DefaultFunName]: [] }
   private currentFunctionName: string = DefaultFunName
 
+  private functionDefinitions: { [name: string]: AST.FunctionDefinition } = {}
+
   private variableEnv = new Environment<number>()
   private variableCounts: { [name: string]: number } = { [DefaultFunName]: 0 }
 
@@ -26,6 +28,12 @@ export class Compiler implements ASTVisitor<void> {
   }
 
   compile(ast: AST.ASTNode[]): FunctionTable {
+    ast.forEach((stmt) => {
+      if (stmt instanceof AST.FunctionDefinition) {
+        this.functionDefinitions[stmt.name.value] = stmt
+      }
+    })
+
     ast.forEach((stmt) => {
       stmt.accept(this)
     })
@@ -170,7 +178,13 @@ export class Compiler implements ASTVisitor<void> {
   }
   visitCallFunction(node: AST.CallFunction): void {
     node.args.forEach((arg) => arg.accept(this))
-    this.addOperation(new op.CallFunction(node.name.value, node.args.length))
+
+    const target = this.functionDefinitions[node.name.value]
+    if (target && target.isGenerator()) {
+      this.addOperation(new op.InitGenerator(node.name.value, node.args.length))
+    } else {
+      this.addOperation(new op.CallFunction(node.name.value, node.args.length))
+    }
   }
   visitReferenceVariable(node: AST.ReferenceVariable): void {
     const name = node.name.value

@@ -70,6 +70,18 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('generator function and yield', function() {
+    it('should work', function() {
+      assert.deepEqual(ChinoScript.valueToArray(e(`int counter() gen {
+          for (int i = 0; true; i += 1) {
+            yield i;
+          }
+        }
+        let c = counter();
+        int[]{next(c), next(c), next(c)};`)), [0, 1, 2])
+    })
+  })
+
   describe('string', function() {
     it('is treated as char array', function() {
       assert.doesNotThrow(() => e('char[] str = "hello";'))

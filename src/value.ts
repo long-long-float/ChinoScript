@@ -15,3 +15,14 @@ export class ChinoArray extends ChinoObject {
     super()
   }
 }
+
+export class Generator extends ChinoObject {
+  public pc: number = 0
+  public variableEnv: { [key: string]: Value } = {}
+
+  constructor(
+    public name: string
+  ) {
+    super()
+  }
+}

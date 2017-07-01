@@ -19,6 +19,8 @@ export class VirtualMachine {
 
   private pcStack = new Stack<[number, string]>()
 
+  private genStack = new Stack<Value.Generator>()
+
   private table: any[]
 
   constructor() {
@@ -34,6 +36,14 @@ export class VirtualMachine {
             values.push(this.stack.pop())
           }
           this.stack.push(new Value.ChinoArray(values.reverse(), len))
+        } else if (operation.name === 'next') {
+          const gen = this.stack.pop()
+          if (!(gen instanceof Value.Generator)) {
+            throw new Error('value must be generator')
+          }
+          this.variableEnv.push(gen.variableEnv)
+          this.pcStack.push([gen.pc - 1, gen.name])
+          this.genStack.push(gen)
 
         // TODO: 下の関数を外から定義できるようにする
         } else if (operation.name === 'ctoi') {
@@ -63,6 +73,9 @@ export class VirtualMachine {
           // 命令実行後にpcがインクリメントされてしまうので-1
           this.pcStack.push([-1, operation.name])
         }
+      },
+      'InitGenerator', (operation: op.InitGenerator) => {
+        this.stack.push(new Value.Generator(operation.name))
       },
       'Push', (operation: op.Push) => {
         this.stack.push(operation.value)
@@ -177,6 +190,12 @@ export class VirtualMachine {
       'Ret', (operation: op.Ret) => {
         this.variableEnv.pop()
         this.pcStack.pop()
+      },
+      'YieldRet', (operation: op.YieldRet) => {
+        this.variableEnv.pop()
+        const pc = this.pcStack.pop()
+        const gen = this.genStack.pop()
+        gen.pc = pc[0] + 1
       },
       'Label', (operation: op.Label) => {},
     ]
