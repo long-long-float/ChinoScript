@@ -155,6 +155,25 @@ export class VirtualMachine {
         }
         this.stack.push(Math.floor(result))
       },
+      'FArith', (operation: op.IArith) => {
+        const right = this.stack.pop()
+        const left = this.stack.pop()
+
+        if (!this.isNumber(right) || !this.isNumber(left)) {
+          throw new Error('right or left must be number')
+        }
+
+        let result: Value.Integer
+        switch (operation.operation) {
+          case '+': result = left + right; break
+          case '-': result = left - right; break
+          case '*': result = left * right; break
+          case '/': result = left / right; break
+          case '%': result = left % right; break
+          default: throw new Error(`unknown operation ${operation.operation}`)
+        }
+        this.stack.push(result)
+      },
       'ICmp', (operation: op.ICmp) => {
         const right = this.stack.pop()
         const left = this.stack.pop()

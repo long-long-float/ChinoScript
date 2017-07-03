@@ -44,7 +44,10 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitYieldStatement(node: AST.YieldStatement): Type {
     const retType = node.value !== null ? node.value.accept(this) : new Type('Tuple', [])
-    this.checkSatisfied(this.functions[this.currentFunctionName].outputType, retType, node.location)
+    this.checkSatisfied(
+      this.functions[this.currentFunctionName].outputType,
+      new Type('Generator', [retType]),
+      node.location)
     return new Type('Tuple', [])
   }
   visitBreakStatement(node: AST.BreakStatement): Type {
