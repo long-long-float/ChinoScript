@@ -92,7 +92,7 @@ describe('ChinoScript', function() {
   })
 
   describe('arithmetic operations', function() {
-    it('should return collect value', function () {
+    it('should return correct value', function () {
       assert.equal(e('1 + 1;'), 2)
       assert.equal(e('3 - 1;'), 2)
       assert.equal(e('1 * 2;'), 2)
@@ -133,14 +133,14 @@ describe('ChinoScript', function() {
   })
 
   describe('if expr', function() {
-    it('should return collect value', function() {
+    it('should return correct value', function() {
       assert.equal(ChinoScript.valueToString(e('if(1 == 1) { "OK"; } else { "NG"; };')), 'OK')
       assert.equal(ChinoScript.valueToString(e('if(1 != 1) { "NG"; } else { "OK"; };')), 'OK')
     })
   })
 
   describe('functions', function() {
-    it('should return collect value from defined function', function() {
+    it('should return correct value from defined function', function() {
       const result = ChinoScript.evaluate(`int fact(int n) {
           if (n < 2) { return n; }
           else { return fact(n - 1) * n; };
