@@ -82,6 +82,12 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('suffix literal', function() {
+    it('should be treated as function', function() {
+      assert.equal(e('int K(int value) { return value * 1024; } 100K;'), 100 * 1024)
+    })
+  })
+
   describe('string', function() {
     it('is treated as char array', function() {
       assert.doesNotThrow(() => e('char[] str = "hello";'))

@@ -2,7 +2,7 @@
   const AST = require('./ast.js')
   const Types = require('./type.js')
 
-  const RESERVED_WORDS = ["return", "int", "string", "char", "void", "for", "while", "if", "let"];
+  const RESERVED_WORDS = ["return", "int", "string", "char", "float", "void", "for", "while", "if", "let"];
 
   function binary_op(left, rest, type) {
     left = flatten([left]);
@@ -47,7 +47,7 @@
   function type(id, ary) {
     // FIXME: どうにかしたい
     const typeTable = {
-      'int': 'Integer', 'bool': 'Boolean', 'char': 'Char', 'string': 'String'
+      'int': 'Integer', 'bool': 'Boolean', 'char': 'Char', 'string': 'String', 'float': 'Float'
     };
 
     const typeName = typeTable.hasOwnProperty(id.value) ?
@@ -106,7 +106,8 @@ top_statement
 
 def_fun
   = type:type _ name:identifier _ generic_types:( "<" identifier _ :("," _ identifier _)* ">" )? _
-    "(" _  fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")" _ modifier:"gen"? _ block:block
+    "(" _  fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")" _
+    modifier:("gen" / "suffix")? _ block:block
     {
       const gt = filter(flatten(generic_types || []))
       gt.shift()
@@ -196,13 +197,19 @@ factor
   / if_expr
   / name:identifier _ "(" _ fst_arg:expression? rest_args:(_ "," _ expression)* _ ")"
     { return new AST.CallFunction(name, args(fst_arg, rest_args)); }
-  / float
+  / expr:literal suffix:identifier
+    // { return new AST.SuffixLiteral(expr, suffix, location()) }
+    { return new AST.CallFunction(suffix, [expr]) }
+  / literal
+  / id:identifier index:(_ "[" _ expression _ "]" _)?
+    { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
+
+literal
+  = float
   / integer
   / string
   / char
   / boolean
-  / id:identifier index:(_ "[" _ expression _ "]" _)?
-    { return new AST.ReferenceVariable(id, index !== null ? index[3] : null); }
   / array
 
 string

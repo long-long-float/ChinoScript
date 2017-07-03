@@ -1,0 +1,5 @@
+float per(float value) {
+  return value / 100.0;
+}
+
+puts(50.0per);
