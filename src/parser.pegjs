@@ -196,6 +196,7 @@ factor
   / if_expr
   / name:identifier _ "(" _ fst_arg:expression? rest_args:(_ "," _ expression)* _ ")"
     { return new AST.CallFunction(name, args(fst_arg, rest_args)); }
+  / float
   / integer
   / string
   / char
@@ -221,6 +222,10 @@ integer
   // TODO: 負数に対応
   = [0-9]+
     { return new AST.IntegerLiteral(parseInt(text(), 10), location()); }
+
+float
+  = left:[0-9]+ "." right:[0-9]+
+    { return new AST.FloatLiteral(parseFloat(text()), location()); }
 
 if_expr
   = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?

@@ -3,11 +3,19 @@ import { parser } from './parser.d'
 import { ASTVisitor } from './ast-visitor'
 
 export abstract class ASTNode {
+  private _resultType: Type | null = null
+
   constructor(
     public location: parser.Location
   ) {}
 
   abstract accept<T>(visitor: ASTVisitor<T>): T
+
+  get resultType() { return this._resultType }
+
+  setResultType(type: Type): void {
+    if (type !== null) this._resultType = type
+  }
 }
 
 export abstract class Statement extends ASTNode {
@@ -291,6 +299,19 @@ export class IntegerLiteral extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitIntegerLiteral(this)
+  }
+}
+
+export class FloatLiteral extends Expression {
+  constructor(
+    public value: number,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitFloatLiteral(this)
   }
 }
 

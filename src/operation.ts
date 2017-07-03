@@ -87,6 +87,14 @@ export class IArith extends Operation {
   }
 }
 
+export class FArith extends Operation {
+  constructor(
+    public operation: ArithmeticOperation
+  ) {
+    super()
+  }
+}
+
 export class ICmp extends Operation {
   constructor(
     public operation: PredicationalOperation

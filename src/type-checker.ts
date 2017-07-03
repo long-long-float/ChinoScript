@@ -52,7 +52,7 @@ export class TypeChecker implements ASTVisitor<Type> {
     return new Type('Tuple', [])
   }
   visitFunctionDefinition(node: AST.FunctionDefinition): Type {
-    if (node.isGenerics()) { // non generics function
+    if (!node.isGenerics()) { // non generics function
       this.defineFunction(node, null)
     } else { // gengerics function
       // do nothing
@@ -102,17 +102,22 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     this.checkEquals(leftType, rightType, node.location)
 
-    let expectedType: Type
+    let expectedType: Type | null = null
     if (node.type === AST.BinaryOpType.Logic) {
       expectedType = new Type('Boolean', [])
     } else {
       if (node.op === '==' || node.op === '!=') {
         expectedType = rightType
-      } else {
-        expectedType = new Type('Integer', [])
       }
     }
-    this.checkSatisfied(expectedType, leftType, node.location)
+
+    if (expectedType !== null) {
+      this.checkSatisfied(expectedType, leftType, node.location)
+    } else { // logic or pred
+      if (!leftType.equals(new Type('Integer', [])) && !leftType.equals(new Type('Float', []))) {
+        throw new TypeError(`expected 'Integer' or 'Float', but '${leftType.toString()}' given`, node.location)
+      }
+    }
 
     let resultType: Type
     if (node.type === AST.BinaryOpType.Arith) {
@@ -120,6 +125,9 @@ export class TypeChecker implements ASTVisitor<Type> {
     } else {
       resultType = new Type('Boolean', [])
     }
+
+    node.left.setResultType(leftType)
+    node.right.setResultType(rightType)
 
     return resultType
   }
@@ -197,18 +205,22 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     const thenType = node.thenBlock.accept(this)
 
-    if (!thenType.equals(new Type('Tuple', []))) {
-      if (node.elseBlock === null) {
-        throw new SyntaxError('else block must be needed when then block doesn\'t return unit.', node.location)
-      }
+    if (node.elseBlock !== null) {
       const elseType = node.elseBlock.accept(this)
       this.checkEquals(thenType, elseType, node.thenBlock.location)
+    } else {
+      if (!thenType.equals(new Type('Tuple', []))) {
+        throw new SyntaxError('else block must be needed when then block doesn\'t return unit.', node.location)
+      }
     }
 
     return thenType
   }
   visitIntegerLiteral(node: AST.IntegerLiteral): Type {
     return new Type('Integer', [])
+  }
+  visitFloatLiteral(node: AST.IntegerLiteral): Type {
+    return new Type('Float', [])
   }
   visitBooleanLiteral(node: AST.BooleanLiteral): Type {
     return new Type('Boolean', [])

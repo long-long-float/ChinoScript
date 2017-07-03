@@ -91,6 +91,18 @@ describe('ChinoScript', function() {
     })
   })
 
+  describe('float', function() {
+    const ep = 0.000001
+    const equalFloat = (actual: number, expected: number) => {
+      assert.isTrue(expected - ep <= actual && actual <= expected + ep, `expected ${expected}, but ${actual} given.`)
+    }
+    it('should return correct value', function() {
+      equalFloat(e('3.14;') as number, 3.14)
+      equalFloat(e('3.0 + 0.14;') as number, 3.14)
+      equalFloat(e('50.0 / 100.0;') as number, 0.5)
+    })
+  })
+
   describe('arithmetic operations', function() {
     it('should return correct value', function () {
       assert.equal(e('1 + 1;'), 2)

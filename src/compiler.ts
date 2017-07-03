@@ -137,7 +137,16 @@ export class Compiler implements ASTVisitor<void> {
     if (op.isArithmeticOperation(node.op)) {
       node.left.accept(this)
       node.right.accept(this)
-      this.addOperation(new op.IArith(node.op))
+      const type = node.left.resultType
+      if (type !== null) {
+        if (type.name === 'Integer') {
+          this.addOperation(new op.IArith(node.op))
+        } else { // Float
+          this.addOperation(new op.FArith(node.op))
+        }
+      } else {
+        throw new Error('Bug')
+      }
     } else if (op.isLogicalOperation(node.op)) {
       const elseLabel = this.createLabel()
       const endLabel = this.createLabel()
@@ -218,6 +227,9 @@ export class Compiler implements ASTVisitor<void> {
     this.addOperation(endLabel)
   }
   visitIntegerLiteral(node: AST.IntegerLiteral): void {
+    this.addOperation(new op.Push(node.value))
+  }
+  visitFloatLiteral(node: AST.IntegerLiteral): void {
     this.addOperation(new op.Push(node.value))
   }
   visitCharLiteral(node: AST.CharLiteral): void {

@@ -25,10 +25,6 @@ export class Type {
 
   }
 
-  is(name: string): boolean {
-    return this.name === name
-  }
-
   includes(name: string): boolean {
     if (this.name === name) {
       return true
