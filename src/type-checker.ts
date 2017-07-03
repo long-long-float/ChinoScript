@@ -5,6 +5,7 @@ import { TypeError, SyntaxError, UndefinedError } from './exception'
 import { Stack } from './stack'
 import { parser } from './parser'
 import { Environment } from './environment'
+import { ExternalFunction } from './index'
 
 export class TypeChecker implements ASTVisitor<Type> {
   variableEnv = new Environment<Type>()
@@ -12,13 +13,20 @@ export class TypeChecker implements ASTVisitor<Type> {
   currentFunctionName = ''
   functions: { [name: string]: AST.FunctionDefinition } = {}
 
-  check(ast: AST.ASTNode[]) {
+  externalFunctions: { [name: string]: ExternalFunction } = {}
+
+  check(ast: AST.ASTNode[], externalFunctions: ExternalFunction[]) {
+    externalFunctions.forEach((ext) => {
+      this.externalFunctions[ext.name] = ext
+    })
+
     this.variableEnv.push()
     ast.forEach((stmt) => {
       if (stmt instanceof AST.FunctionDefinition) {
         this.functions[stmt.name.value] = stmt
       }
     })
+
     ast.forEach((stmt) => stmt.accept(this))
   }
 
@@ -138,14 +146,31 @@ export class TypeChecker implements ASTVisitor<Type> {
     throw new Error("Method not implemented.");
   }
   visitCallFunction(node: AST.CallFunction): Type {
-    if (node.name.value === 'puts') {
-      // TODO: check
-      node.args[0].accept(this)
-      return new Type('Tuple', [])
+    if (this.externalFunctions.hasOwnProperty(node.name.value)) {
+      const target = this.externalFunctions[node.name.value]
+      if (target.argTypes.length !== node.args.length) {
+        throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.argTypes.length})`, node.location)
+      }
+
+      const genericsTable: { [name: string]: Type } = {}
+      target.argTypes.forEach((expected, i) => {
+        const arg = node.args[i].accept(this)
+
+        if (target.genericsTypes.length > 0 && target.genericsTypes.some((n) => expected.includes(n))) {
+          const genericsName = expected.name
+          if (!genericsTable.hasOwnProperty(genericsName)) {
+            genericsTable[genericsName] = arg
+          }
+
+          this.checkSatisfied(genericsTable[genericsName], arg, node.args[i].location)
+        } else {
+          this.checkSatisfied(expected, arg, node.args[i].location)
+        }
+      })
+
+      return target.outputType
 
     // TODO: 下の関数を外から定義できるようにする
-    } else if (node.name.value === 'ctoi') {
-      return new Type('Integer', [])
     } else if (node.name.value === 'len') {
       return new Type('Integer', [])
     } else if (node.name.value === 'append') {

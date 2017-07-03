@@ -2,8 +2,9 @@ import * as op from './operation'
 import * as Value from './value'
 import { FunctionTable, DefaultFunName } from './compiler'
 import { Stack } from './stack'
-import { valueToString } from './index'
+import { valueToString, ExternalFunction } from './index'
 import { Environment } from './environment'
+import { Type } from './type'
 
 import * as util from 'util'
 
@@ -13,6 +14,7 @@ export class VirtualMachine {
   private globalVariableEnv: Value.Value[] = []
 
   private functions: FunctionTable
+  private externalFunctions: { [name: string]: ExternalFunction } = {}
 
   // for JumpXXX
   private labelTable: { [id: number]: number } = {}
@@ -26,10 +28,7 @@ export class VirtualMachine {
   constructor() {
     this.table = [
       'CallFunction', (operation: op.CallFunction) => {
-        if (operation.name === 'puts') {
-          const value = this.stack.pop()
-          console.log(valueToString(value))
-        } else if (operation.name === 'buildArray') {
+        if (operation.name === 'buildArray') {
           const len = operation.argumentsLength
           const values: Value.Value[] = []
           for (let i = 0; i < len; i++) {
@@ -45,9 +44,19 @@ export class VirtualMachine {
           this.pcStack.push([gen.pc - 1, gen.name])
           this.genStack.push(gen)
 
+        } else if (this.externalFunctions.hasOwnProperty(operation.name)) {
+          const callee = this.externalFunctions[operation.name]
+          const argLen = callee.argTypes.length
+          const args = []
+          for (let i = 0; i < argLen; i++) {
+            args.push(this.stack.pop())
+          }
+          const result = callee.body.apply(null, args.reverse())
+          if (!callee.outputType.equals(new Type('Tuple', []))) {
+            this.stack.push(result)
+          }
+
         // TODO: 下の関数を外から定義できるようにする
-        } else if (operation.name === 'ctoi') {
-          // do nothing
         } else if (operation.name === 'len') {
           const arg = this.stack.pop()
           if (!(arg instanceof Value.ChinoArray)) {
@@ -220,8 +229,11 @@ export class VirtualMachine {
     ]
   }
 
-  run(_functions: FunctionTable): Value.Value {
+  run(_functions: FunctionTable, externalFunctions: ExternalFunction[]): Value.Value {
     this.functions = _functions
+    externalFunctions.forEach((ext) => {
+      this.externalFunctions[ext.name] = ext
+    })
 
     this.labelTable = {}
     Object.keys(this.functions).forEach((funName) => {

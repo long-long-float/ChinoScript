@@ -6,10 +6,19 @@ import * as op from './operation'
 import { VirtualMachine } from './vm'
 import * as Value from './value'
 import * as Exceptions from './exception'
+import { Type } from './type'
 
 import * as util from 'util'
 
 export const exceptions = Exceptions
+
+export interface ExternalFunction {
+  name: string
+  outputType: Type
+  genericsTypes: string[]
+  argTypes: Type[]
+  body: (...args: Value.Value[]) => Value.Value | null
+}
 
 export function valueToString(value: Value.Value): string {
   if (value instanceof Value.ChinoArray) {
@@ -28,10 +37,32 @@ export function valueToArray(value: Value.Value): Value.Value[] | undefined {
 }
 
 export function evaluate(code: string, debug = false): Value.Value {
+  const externalFunctions: ExternalFunction[] = [
+    {
+      name: 'ctoi',
+      outputType: new Type('Integer', []),
+      genericsTypes: [],
+      argTypes: [new Type('Char', [])],
+      body: (...args: Value.Value[]) => {
+        return args[0]
+      }
+    },
+    {
+      name: 'puts',
+      outputType: new Type('Tuple', []),
+      genericsTypes: ['T'],
+      argTypes: [new Type('T', [])],
+      body: (...args: Value.Value[]) => {
+        console.log(valueToString(args[0]))
+        return null
+      }
+    },
+  ]
+
   const ast = parse(code)
 
   const typeChecker = new TypeChecker()
-  typeChecker.check(ast)
+  typeChecker.check(ast, externalFunctions)
 
   const ops = compile(ast)
 
@@ -40,7 +71,8 @@ export function evaluate(code: string, debug = false): Value.Value {
     console.log(ops)
   }
 
-  return run(ops)
+  const vm = new VirtualMachine()
+  return vm.run(ops, externalFunctions)
 }
 
 export function parse(code: string): AST.ASTNode[] {
@@ -50,9 +82,4 @@ export function parse(code: string): AST.ASTNode[] {
 export function compile(ast: AST.ASTNode[]): FunctionTable {
   const compiler = new Compiler()
   return compiler.compile(ast)
-}
-
-export function run(operations: FunctionTable): Value.Value {
-  const vm = new VirtualMachine()
-  return vm.run(operations)
 }
