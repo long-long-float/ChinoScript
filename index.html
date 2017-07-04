@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="">
+<link rel="shortcut icon" href="">
+</head>
+<body>
+  <textarea id="src" cols="40" rows="5">
+for (int i = 0; i < 10; i += 1) {
+  puts("Hello");
+}
+  </textarea>
+  <button onclick="run()">Run</button><br>
+  Output<br>
+  <textarea id="output" cols="40" rows="5"></textarea>
+  <div id="result"></div>
+  <div id="error" style="color: red"></div>
+
+  <script src="./dist/chinoscript.js"></script>
+  <script>
+    var resultElem = document.getElementById('result')
+    var outputElem = document.getElementById('output')
+
+    console.log = function (text) {
+      outputElem.value += text + '\n'
+    }
+
+    var errorElem = document.getElementById('error')
+    function run() {
+      outputElem.value = ''
+
+      var code = document.getElementById('src').value
+      try {
+        resultElem.innerHTML = ChinoScript.evaluate(code, false)
+      } catch (e) {
+        errorElem.innerHTML = e.message
+      }
+    }
+  </script>
+</body>
+</html>
+

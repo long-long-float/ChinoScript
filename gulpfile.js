@@ -2,6 +2,8 @@ const gulp = require('gulp')
 const ts   = require('gulp-typescript')
 const pegjs = require('gulp-pegjs')
 const merge = require('merge2')
+const browserify = require('browserify')
+const source = require('vinyl-source-stream')
 
 gulp.task('build', () => {
   const tsProject = ts.createProject('tsconfig.json')
@@ -12,6 +14,14 @@ gulp.task('build', () => {
     tsResult.js.pipe(gulp.dest(tsProject.config.compilerOptions.outDir)),
     gulp.src('src/parser.pegjs').pipe(pegjs({ format: 'globals', exportVar: 'parser', cache: true })).pipe(gulp.dest('dist/src')),
   ])
+})
+
+
+gulp.task('browserify', () => {
+  return browserify('./dist/src/browser.js')
+    .bundle()
+    .pipe(source('chinoscript.js'))
+    .pipe(gulp.dest('./dist/'))
 })
 
 gulp.task('watch-build', () => {

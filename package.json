@@ -22,6 +22,7 @@
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.31",
+    "browserify": "^14.4.0",
     "chai": "^4.0.2",
     "gulp": "^3.9.1",
     "gulp-cli": "^1.3.0",
@@ -30,6 +31,7 @@
     "merge2": "^1.0.3",
     "mocha": "^3.4.2",
     "pegjs": "^0.10.0",
-    "typescript": "^2.3.4"
+    "typescript": "^2.3.4",
+    "vinyl-source-stream": "^1.1.0"
   }
 }
