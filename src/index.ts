@@ -57,6 +57,37 @@ export function evaluate(code: string, debug = false): Value.Value {
         return null
       }
     },
+    {
+      name: 'len',
+      outputType: new Type('Integer', []),
+      genericsTypes: ['T'],
+      argTypes: [new Type('Array', [new Type('T', [])])],
+      body: (...args: Value.Value[]) => {
+        const arg = args[0]
+        if (!(arg instanceof Value.ChinoArray)) {
+          throw new Error('value must be array')
+        }
+        const t = arg as Value.ChinoArray
+        return t.length
+      }
+    },
+    {
+      name: 'append',
+      outputType: new Type('Tuple', []),
+      genericsTypes: ['T'],
+      argTypes: [new Type('Array', [new Type('T', [])]), new Type('T', [])],
+      body: (...args: Value.Value[]) => {
+        const ary = args[0]
+        const value = args[1]
+        if (!(ary instanceof Value.ChinoArray)) {
+          throw new Error('value must be array')
+        }
+        const t = ary as Value.ChinoArray
+        t.values.push(value)
+        t.length++
+        return null
+      }
+    },
   ]
 
   const ast = parse(code)

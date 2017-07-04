@@ -47,7 +47,7 @@ export class VirtualMachine {
         } else if (this.externalFunctions.hasOwnProperty(operation.name)) {
           const callee = this.externalFunctions[operation.name]
           const argLen = callee.argTypes.length
-          const args = []
+          const args: Value.Value[] = []
           for (let i = 0; i < argLen; i++) {
             args.push(this.stack.pop())
           }
@@ -55,24 +55,6 @@ export class VirtualMachine {
           if (!callee.outputType.equals(new Type('Tuple', []))) {
             this.stack.push(result)
           }
-
-        // TODO: 下の関数を外から定義できるようにする
-        } else if (operation.name === 'len') {
-          const arg = this.stack.pop()
-          if (!(arg instanceof Value.ChinoArray)) {
-            throw new Error('value must be array')
-          }
-          const t = arg as Value.ChinoArray
-          this.stack.push(t.length)
-        } else if (operation.name === 'append') {
-          const value = this.stack.pop()
-          const arg = this.stack.pop()
-          if (!(arg instanceof Value.ChinoArray)) {
-            throw new Error('value must be array')
-          }
-          const t = arg as Value.ChinoArray
-          t.values.push(value)
-          t.length++
 
         } else {
           if (!this.functions.hasOwnProperty(operation.name)) {
