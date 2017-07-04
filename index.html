@@ -16,33 +16,13 @@ for (int i = 0; i < 10; i += 1) {
   puts("Hello");
 }
   </textarea>
-  <button onclick="run()">Run</button><br>
+  <button id="run-button">Run</button><br>
   Output<br>
   <textarea id="output" cols="40" rows="5"></textarea>
   <div id="result"></div>
   <div id="error" style="color: red"></div>
 
-  <script src="./dist/chinoscript.js"></script>
-  <script>
-    var resultElem = document.getElementById('result')
-    var outputElem = document.getElementById('output')
-
-    console.log = function (text) {
-      outputElem.value += text + '\n'
-    }
-
-    var errorElem = document.getElementById('error')
-    function run() {
-      outputElem.value = ''
-
-      var code = document.getElementById('src').value
-      try {
-        resultElem.innerHTML = ChinoScript.evaluate(code, false)
-      } catch (e) {
-        errorElem.innerHTML = e.message
-      }
-    }
-  </script>
+  <script src="./dist/game.js"></script>
 </body>
 </html>
 
