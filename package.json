@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha dist/test",
     "build": "gulp build",
+    "build-game": "gulp build-game",
     "watch-build": "gulp watch-build"
   },
   "repository": {
