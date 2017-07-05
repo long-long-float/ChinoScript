@@ -88,6 +88,29 @@ export function evaluate(code: string, debug = false): Value.Value {
         return null
       }
     },
+    {
+      name: 'rand',
+      outputType: new Type('Integer', []),
+      genericsTypes: [],
+      argTypes: [],
+      body: (...args: Value.Value[]) => {
+        return Math.floor(Math.random() * Math.pow(2, 31))
+      }
+    },
+    {
+      name: 'get_int',
+      outputType: new Type('Integer', []),
+      genericsTypes: [],
+      argTypes: [],
+      body: (...args: Value.Value[]) => {
+        const result = prompt('input')
+        if (result !== null) {
+          return parseInt(result, 10)
+        } else {
+          return 0
+        }
+      }
+    },
   ]
 
   const ast = parse(code)

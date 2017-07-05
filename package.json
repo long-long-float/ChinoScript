@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha dist/test",
     "build": "gulp build",
+    "build-game": "gulp build-game",
     "watch-build": "gulp watch-build"
   },
   "repository": {
@@ -31,6 +32,7 @@
     "merge2": "^1.0.3",
     "mocha": "^3.4.2",
     "pegjs": "^0.10.0",
+    "run-sequence": "^2.0.0",
     "typescript": "^2.3.4",
     "vinyl-source-stream": "^1.1.0"
   }
