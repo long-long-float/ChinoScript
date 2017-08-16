@@ -63,7 +63,7 @@ export function evaluate(code: string, debug = false): Value.Value {
       genericsTypes: ['T'],
       argTypes: [new Type('T', [])],
       body: (...args: Value.Value[]) => {
-        console.log(args[0])
+        console.log(util.inspect(args[0], false, null))
         return null
       }
     },

@@ -16,6 +16,15 @@ export class ChinoArray extends ChinoObject {
   }
 }
 
+export class ChinoData extends ChinoObject {
+  constructor(
+    public name: string,
+    public values: Value[]
+  ) {
+    super()
+  }
+}
+
 export class Generator extends ChinoObject {
   public pc: number = 0
   public variableEnv: { [key: string]: Value } = {}

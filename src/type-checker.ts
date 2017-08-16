@@ -7,11 +7,14 @@ import { parser } from './parser'
 import { Environment } from './environment'
 import { ExternalFunction } from './index'
 
+export type DataConstrutorTable = { [name: string]: [AST.DataMemberDefinition, string] }
+
 export class TypeChecker implements ASTVisitor<Type> {
   variableEnv = new Environment<Type>()
 
   currentFunctionName = ''
   functions: { [name: string]: AST.FunctionDefinition } = {}
+  dataConstructors: DataConstrutorTable = {}
 
   externalFunctions: { [name: string]: ExternalFunction } = {}
 
@@ -24,6 +27,10 @@ export class TypeChecker implements ASTVisitor<Type> {
     ast.forEach((stmt) => {
       if (stmt instanceof AST.FunctionDefinition) {
         this.functions[stmt.name.value] = stmt
+      } else if (stmt instanceof AST.DataDefinition) {
+        stmt.members.forEach((member) => {
+          this.dataConstructors[member.name.value] = [member, stmt.name.value]
+        })
       }
     })
 
@@ -150,7 +157,27 @@ export class TypeChecker implements ASTVisitor<Type> {
     throw new Error("Method not implemented.");
   }
   visitIfIsExpression(node: AST.IfIsExpression): Type {
-    return new Type('Boolean', []);
+    node.condLeft.accept(this)
+
+    const table: { [name:string]: Type } = {}
+    node.condRight.collectVariables(table, this.dataConstructors)
+
+    // TODO: type check
+
+    this.variableEnv.push(table)
+    const thenType = node.thenBlock.accept(this)
+    this.variableEnv.pop()
+
+    if (node.elseBlock !== null) {
+      const elseType = node.elseBlock.accept(this)
+      this.checkEquals(thenType, elseType, node.thenBlock.location)
+    } else {
+      if (!thenType.equals(new Type('Tuple', []))) {
+        throw new SyntaxError('else block must be needed when then block doesn\'t return unit.', node.location)
+      }
+    }
+
+    return thenType
   }
   visitCallFunction(node: AST.CallFunction): Type {
     if (this.externalFunctions.hasOwnProperty(node.name.value)) {
@@ -182,10 +209,7 @@ export class TypeChecker implements ASTVisitor<Type> {
       this.checkSatisfied(new Type('Generator', []), arg, node.args[0].location, true)
       return arg.innerTypes[0]
 
-    } else {
-      if (!this.functions.hasOwnProperty(node.name.value)) {
-        throw new SyntaxError(`${node.name.value} is not defined`, node.location)
-      }
+    } else if (this.functions.hasOwnProperty(node.name.value)) {
       const target = this.functions[node.name.value]
       if (target.args.length !== node.args.length) {
         throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target.args.length})`, node.location)
@@ -212,10 +236,16 @@ export class TypeChecker implements ASTVisitor<Type> {
       }
 
       return target.outputType
+    } else if (this.dataConstructors.hasOwnProperty(node.name.value)) {
+      const target = this.dataConstructors[node.name.value]
+      return new Type(target[1], [])
+    } else {
+      throw new SyntaxError(`${node.name.value} is not defined`, node.location)
     }
   }
   visitReferenceVariable(node: AST.ReferenceVariable): Type {
     const name = node.name.value
+
     const type = this.variableEnv.reference(name)
     if (type === null) {
       throw new UndefinedError(name, node.location)

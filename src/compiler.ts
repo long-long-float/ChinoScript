@@ -15,6 +15,7 @@ export class Compiler implements ASTVisitor<void> {
   private currentFunctionName: string = DefaultFunName
 
   private functionDefinitions: { [name: string]: AST.FunctionDefinition } = {}
+  private dataConstructors: { [name: string]: [AST.DataMemberDefinition, string] } = {}
 
   private variableEnv = new Environment<number>()
   private variableCounts: { [name: string]: number } = { [DefaultFunName]: 0 }
@@ -31,6 +32,10 @@ export class Compiler implements ASTVisitor<void> {
     ast.forEach((stmt) => {
       if (stmt instanceof AST.FunctionDefinition) {
         this.functionDefinitions[stmt.name.value] = stmt
+      } else if (stmt instanceof AST.DataDefinition) {
+        stmt.members.forEach((member) => {
+          this.dataConstructors[member.name.value] = [member, stmt.name.value]
+        })
       }
     })
 
@@ -194,11 +199,16 @@ export class Compiler implements ASTVisitor<void> {
   visitCallFunction(node: AST.CallFunction): void {
     node.args.forEach((arg) => arg.accept(this))
 
-    const target = this.functionDefinitions[node.name.value]
-    if (target && target.isGenerator()) {
-      this.addOperation(new op.InitGenerator(node.name.value, node.args.length))
+    if (this.dataConstructors.hasOwnProperty(node.name.value)) {
+      const target = this.dataConstructors[node.name.value]
+      this.addOperation(new op.InitData(node.name.value, node.args.length))
     } else {
-      this.addOperation(new op.CallFunction(node.name.value, node.args.length))
+      const target = this.functionDefinitions[node.name.value]
+      if (target && target.isGenerator()) {
+        this.addOperation(new op.InitGenerator(node.name.value, node.args.length))
+      } else {
+        this.addOperation(new op.CallFunction(node.name.value, node.args.length))
+      }
     }
   }
   visitReferenceVariable(node: AST.ReferenceVariable): void {

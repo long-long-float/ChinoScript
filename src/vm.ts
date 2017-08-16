@@ -68,6 +68,14 @@ export class VirtualMachine {
       'InitGenerator', (operation: op.InitGenerator) => {
         this.stack.push(new Value.Generator(operation.name))
       },
+      'InitData', (operation: op.InitData) => {
+        const argLen = operation.argumentsLength
+        const args: Value.Value[] = []
+        for (let i = 0; i < argLen; i++) {
+          args.push(this.stack.pop())
+        }
+        this.stack.push(new Value.ChinoData(operation.name, args.reverse()))
+      },
       'Push', (operation: op.Push) => {
         this.stack.push(operation.value)
       },

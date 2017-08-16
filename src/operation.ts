@@ -23,6 +23,15 @@ export class InitGenerator extends Operation {
   }
 }
 
+export class InitData extends Operation {
+  constructor(
+    public name: string,
+    public argumentsLength: number
+  ) {
+    super()
+  }
+}
+
 export class Push extends Operation {
   constructor(
     public value: Value.Primitive

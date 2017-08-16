@@ -1,6 +1,7 @@
 import { Type } from './type'
 import { parser } from './parser.d'
 import { ASTVisitor } from './ast-visitor'
+import { DataConstrutorTable } from './type-checker'
 
 export abstract class ASTNode {
   private _resultType: Type | null = null
@@ -281,7 +282,7 @@ export class UnaryOpFront extends Expression {
 export class IfIsExpression extends Expression {
   constructor(
     public condLeft: Expression,
-    public condRight: Expression,
+    public condRight: Pattern,
     public thenBlock: Block,
     public elseBlock: Block | null,
     location: parser.Location
@@ -291,6 +292,52 @@ export class IfIsExpression extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitIfIsExpression(this)
+  }
+}
+
+export abstract class Pattern extends ASTNode {
+  constructor(
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T | null {
+    return null
+  }
+
+  abstract collectVariables(table: { [name:string]: Type }, dct: DataConstrutorTable): void
+}
+
+export class DataPattern extends Pattern {
+  constructor(
+    public name: Identifier,
+    public args: Pattern[],
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  collectVariables(table: { [name:string]: Type }, dct: DataConstrutorTable): void {
+    this.args.forEach((arg, i) => {
+      if (arg instanceof IdentifierPattern) {
+        const def = dct[this.name.value][0]
+        table[arg.id.value] = def.args[i].type
+      }
+      arg.collectVariables(table, dct)
+    })
+  }
+}
+
+export class IdentifierPattern extends Pattern {
+  constructor(
+    public id: Identifier,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  collectVariables(table: { [name:string]: Type }, dct: DataConstrutorTable): void {
   }
 }
 

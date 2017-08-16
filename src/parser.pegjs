@@ -122,7 +122,7 @@ def_arg
 
 def_data
   = "data" _ name:identifier _ "{" _ members:(def_data_member _ "," _)+ "}"
-    { return new AST.DataDefinition(name, filter(members), location()) }
+    { return new AST.DataDefinition(name, filter(flatten(members)), location()) }
 
 def_data_member
   = name:identifier _ "(" _ fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")"
@@ -249,8 +249,14 @@ if_expr
     { return new AST.IfExpression(cond, iftrue, iffalse !== null ? iffalse[3] : null); }
 
 if_is_expr
-  = "if" _ "(" _ cleft:expression _ "is" _ cright:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
+  = "if" _ "(" _ cleft:expression _ "is" _ cright:pattern _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
     { return new AST.IfIsExpression(cleft, cright, iftrue, iffalse !== null ? iffalse[3] : null); }
+
+pattern
+  = name:identifier _ "(" _ fst_arg:pattern? rest_args:(_ "," _ pattern)* _ ")"
+    { return new AST.DataPattern(name, args(fst_arg, rest_args)) }
+  / id:identifier
+    { return new AST.IdentifierPattern(id) }
 
 array
   = type:array_type _ "{" _ fst_value:expression? values:(_ "," _ expression)* _ "}"
