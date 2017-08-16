@@ -58,6 +58,16 @@ export function evaluate(code: string, debug = false): Value.Value {
       }
     },
     {
+      name: 'dump',
+      outputType: new Type('Tuple', []),
+      genericsTypes: ['T'],
+      argTypes: [new Type('T', [])],
+      body: (...args: Value.Value[]) => {
+        console.log(args[0])
+        return null
+      }
+    },
+    {
       name: 'len',
       outputType: new Type('Integer', []),
       genericsTypes: ['T'],

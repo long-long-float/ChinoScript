@@ -71,6 +71,10 @@ export class TypeChecker implements ASTVisitor<Type> {
 
     return new Type('Tuple', [])
   }
+  visitDataDefinition(node: AST.DataDefinition): Type {
+    // TODO: Check
+    return new Type('Tuple', [])
+  }
   visitForStatement(node: AST.ForStatement): Type {
     node.init.accept(this)
 
@@ -144,6 +148,9 @@ export class TypeChecker implements ASTVisitor<Type> {
   }
   visitUnaryOpFront(node: AST.UnaryOpFront): Type {
     throw new Error("Method not implemented.");
+  }
+  visitIfIsExpression(node: AST.IfIsExpression): Type {
+    return new Type('Boolean', []);
   }
   visitCallFunction(node: AST.CallFunction): Type {
     if (this.externalFunctions.hasOwnProperty(node.name.value)) {

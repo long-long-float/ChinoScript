@@ -156,6 +156,34 @@ export class ArgumentDefinition extends ASTNode {
   }
 }
 
+export class DataDefinition extends ASTNode {
+  constructor(
+    public name: Identifier,
+    public members: DataMemberDefinition[],
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitDataDefinition(this)
+  }
+}
+
+export class DataMemberDefinition extends ASTNode {
+  constructor(
+    public name: Identifier,
+    public args: ArgumentDefinition[],
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T | null {
+    return null
+  }
+}
+
 export abstract class Expression extends ASTNode {
   constructor(
     location: parser.Location
@@ -247,6 +275,22 @@ export class UnaryOpFront extends Expression {
 
   accept<T>(visitor: ASTVisitor<T>): T {
     return visitor.visitUnaryOpFront(this)
+  }
+}
+
+export class IfIsExpression extends Expression {
+  constructor(
+    public condLeft: Expression,
+    public condRight: Expression,
+    public thenBlock: Block,
+    public elseBlock: Block | null,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  accept<T>(visitor: ASTVisitor<T>): T {
+    return visitor.visitIfIsExpression(this)
   }
 }
 

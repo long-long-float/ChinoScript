@@ -8,9 +8,11 @@ export interface ASTVisitor<T> {
   visitForStatement(node: AST.ForStatement): T
   visitWhileStatement(node: AST.WhileStatement): T
   visitFunctionDefinition(node: AST.FunctionDefinition): T
+  visitDataDefinition(node: AST.DataDefinition): T
   visitAssign(node: AST.Assign): T
   visitBinaryOp(node: AST.BinaryOp): T
   visitUnaryOpFront(node: AST.UnaryOpFront): T
+  visitIfIsExpression(node: AST.IfIsExpression): T
   visitCallFunction(node: AST.CallFunction): T
   visitReferenceVariable(node: AST.ReferenceVariable): T
   visitIfExpression(node: AST.IfExpression): T

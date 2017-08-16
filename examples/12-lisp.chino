@@ -1,0 +1,101 @@
+data Node {
+  Cons(Node car, Node cdr)
+  Null()
+  Symbol(string value)
+  Integer(int value)
+}
+
+string code = "";
+int pos = 0;
+
+bool cur_is(char ch) {
+  return pos < len(code) && code[pos] == ch;
+}
+
+bool cur_is_alpha() {
+  if (pos < len(code)) return false;
+  let cur = ctoi(code[pos]);
+  return ctoi('a') <= cur && cur <= ctoi('z');
+}
+
+void consume() {
+  pos += 1;
+}
+
+int atoi(string str) {
+  int result = 0;
+  int weight = 1;
+  int zero = ctoi('0');
+  for (int i = len(str) - 1 ; i >= 0 ; i -= 1) {
+    result += (ctoi(str[i]) - zero) * weight;
+    weight *= 10;
+  }
+  return result;
+}
+
+int consume_int() {
+  string value = "";
+  while (cur_is_digit()) {
+    append(value, code[pos]);
+    pos += 1;
+  }
+  return atoi(value);
+}
+
+Node parse(string c) {
+  code = c;
+  pos = 0;
+  return parse_expr();
+}
+
+// expr : list
+//      / symbol
+//      / integer
+Node parse_expr() {
+  if (cur_is('(')) {
+    return parse_list();
+  } else if (cur_is_alpha()) {
+    return parse_symbol();
+  } else {
+    return parse_integer();
+  };;
+}
+
+Node parse_list() {
+  return Cons(Null(), Null());
+}
+
+Node parse_symbol() {
+  string val = "";
+  while (cur_is_alpha()) {
+    append(val, expr[pos]);
+    consume();
+  }
+  return Symbol(val);
+}
+
+Node parse_integer() {
+  return Integer(consume_int());
+}
+
+Node eval_expr(Node ast) {
+  if (ast is Cons(name, args)) {
+    if (name == 'print') {
+      if (args is Cons(Integer(v), Null())) {
+        puts(v);
+      };
+    } else if (name == '+') {
+      if (args is Cons(Integer(left), Cons(Integer(right), Null()))) {
+        return Integer(left + right);
+      };
+    };
+  };
+}
+
+void eval(string code) {
+  let ast = parse(code);
+  dump(ast);
+}
+
+eval("(print (+ 1 1))");
+eval("(print (+ 1 1))");

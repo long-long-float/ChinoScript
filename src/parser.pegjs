@@ -102,6 +102,7 @@ program
 top_statement
   = statement _ comment?
   / def_fun
+  / def_data
   / comment
 
 def_fun
@@ -118,6 +119,14 @@ def_fun
 def_arg
   = type:type _ name:identifier
     { return new AST.ArgumentDefinition(type, name, location()); }
+
+def_data
+  = "data" _ name:identifier _ "{" _ members:(def_data_member _ "," _)+ "}"
+    { return new AST.DataDefinition(name, filter(members), location()) }
+
+def_data_member
+  = name:identifier _ "(" _ fst_arg:def_arg? rest_args:(_ "," _ def_arg)* _ ")"
+    { return new AST.DataMemberDefinition(name, args(fst_arg, rest_args), location()) }
 
 statement
   = def_var
@@ -195,6 +204,7 @@ unary
 factor
   = "(" _ expr:expression _ ")" { return expr; }
   / if_expr
+  / if_is_expr
   / name:identifier _ "(" _ fst_arg:expression? rest_args:(_ "," _ expression)* _ ")"
     { return new AST.CallFunction(name, args(fst_arg, rest_args)); }
   / expr:literal suffix:identifier
@@ -237,6 +247,10 @@ float
 if_expr
   = "if" _ "(" _ cond:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
     { return new AST.IfExpression(cond, iftrue, iffalse !== null ? iffalse[3] : null); }
+
+if_is_expr
+  = "if" _ "(" _ cleft:expression _ "is" _ cright:expression _ ")" _ iftrue:block iffalse:(_ "else" _ block)?
+    { return new AST.IfIsExpression(cleft, cright, iftrue, iffalse !== null ? iffalse[3] : null); }
 
 array
   = type:array_type _ "{" _ fst_value:expression? values:(_ "," _ expression)* _ "}"

@@ -120,6 +120,9 @@ export class Compiler implements ASTVisitor<void> {
 
     this.currentFunctionName = prevName
   }
+  visitDataDefinition(node: AST.DataDefinition): void {
+    // TODO: impl
+  }
   visitAssign(node: AST.Assign): void {
     node.right.accept(this)
 
@@ -184,6 +187,9 @@ export class Compiler implements ASTVisitor<void> {
   }
   visitUnaryOpFront(node: AST.UnaryOpFront): void {
     throw new Error("Method not implemented.");
+  }
+  visitIfIsExpression(node: AST.IfIsExpression): void {
+    // TODO: impl
   }
   visitCallFunction(node: AST.CallFunction): void {
     node.args.forEach((arg) => arg.accept(this))
