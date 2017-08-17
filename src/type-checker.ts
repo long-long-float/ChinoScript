@@ -238,6 +238,16 @@ export class TypeChecker implements ASTVisitor<Type> {
       return target.outputType
     } else if (this.dataConstructors.hasOwnProperty(node.name.value)) {
       const target = this.dataConstructors[node.name.value]
+
+      if (target[0].args.length !== node.args.length) {
+        throw new TypeError(`wrong number of arguments (given ${node.args.length}, expected ${target[0].args.length})`, node.location)
+      }
+
+      target[0].args.forEach((expected, i) => {
+        const arg = node.args[i].accept(this)
+        this.checkSatisfied(expected.type, arg, node.args[i].location)
+      })
+
       return new Type(target[1], [])
     } else {
       throw new SyntaxError(`${node.name.value} is not defined`, node.location)

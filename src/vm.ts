@@ -233,6 +233,7 @@ export class VirtualMachine {
               return false
             }
           } else if (p instanceof LiteralPattern) {
+            // TODO: 予めコンパイルしておく
             return t === (p.literal as any).value
           } else {
             return false
