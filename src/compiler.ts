@@ -3,6 +3,7 @@ import * as AST from './ast'
 import * as op from './operation'
 import { Stack } from './stack'
 import { Environment } from './environment'
+import { Type } from './type'
 
 export type FunctionTable = { [name: string]: op.Operation[] }
 
@@ -126,7 +127,6 @@ export class Compiler implements ASTVisitor<void> {
     this.currentFunctionName = prevName
   }
   visitDataDefinition(node: AST.DataDefinition): void {
-    // TODO: impl
   }
   visitAssign(node: AST.Assign): void {
     node.right.accept(this)
@@ -193,9 +193,6 @@ export class Compiler implements ASTVisitor<void> {
   visitUnaryOpFront(node: AST.UnaryOpFront): void {
     throw new Error("Method not implemented.");
   }
-  visitIfIsExpression(node: AST.IfIsExpression): void {
-    // TODO: impl
-  }
   visitCallFunction(node: AST.CallFunction): void {
     node.args.forEach((arg) => arg.accept(this))
 
@@ -229,6 +226,37 @@ export class Compiler implements ASTVisitor<void> {
     const endLabel  = this.createLabel()
 
     this.addOperation(new op.JumpUnless(elseLabel.id))
+
+    // then
+    node.thenBlock.accept(this)
+    this.addOperation(new op.Jump(endLabel.id))
+
+    // else
+    this.addOperation(elseLabel)
+    if (node.elseBlock !== null) {
+      node.elseBlock.accept(this)
+    }
+
+    this.addOperation(endLabel)
+  }
+  visitIfIsExpression(node: AST.IfIsExpression): void {
+    node.condLeft.accept(this)
+
+    this.addOperation(new op.Match(node.condRight))
+
+    const elseLabel = this.createLabel()
+    const endLabel  = this.createLabel()
+
+    this.addOperation(new op.JumpUnless(elseLabel.id))
+
+    const table: { [name:string]: Type } = {}
+    node.condRight.collectVariables(table, this.dataConstructors)
+
+    Object.keys(table).reverse().forEach((key) => {
+      const id = this.defineVariable(key)
+      this.addOperation(new op.Store(id, false))
+    })
+
 
     // then
     node.thenBlock.accept(this)

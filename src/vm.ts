@@ -5,6 +5,7 @@ import { Stack } from './stack'
 import { valueToString, ExternalFunction } from './index'
 import { Environment } from './environment'
 import { Type } from './type'
+import { Pattern, DataPattern, IdentifierPattern } from './ast'
 
 import * as util from 'util'
 
@@ -214,6 +215,33 @@ export class VirtualMachine {
         const pc = this.pcStack.pop()
         const gen = this.genStack.pop()
         gen.pc = pc[0] + 1
+      },
+      'Match', (operation: op.Match) => {
+        const target = this.stack.pop()
+
+        const innerVars: Value.Value[] = []
+        const match = (t: Value.Value, p: Pattern): boolean => {
+          if (p instanceof IdentifierPattern) {
+            innerVars.push(t)
+            return true
+          } else if (p instanceof DataPattern && t instanceof Value.ChinoData) {
+            if (t.name === p.name.value) {
+              return p.args.every((arg, i) =>
+                match(t.values[i], arg)
+              )
+            } else {
+              return false
+            }
+          } else {
+            return false
+          }
+        }
+        const result = match(target, operation.pattern)
+
+        innerVars.forEach((v) => {
+          this.stack.push(v)
+        })
+        this.stack.push(result)
       },
       'Label', (operation: op.Label) => {},
     ]

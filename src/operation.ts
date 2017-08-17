@@ -148,6 +148,14 @@ export class YieldRet extends Operation {
   }
 }
 
+export class Match extends Operation {
+  constructor(
+    public pattern: AST.Pattern
+  ) {
+    super()
+  }
+}
+
 export class Label extends Operation {
   constructor(
     public id: number

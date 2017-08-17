@@ -1,5 +1,5 @@
 data List {
-  Cons(int value, List Next),
+  Cons(int value, List next),
   Null(),
 }
 
@@ -12,28 +12,28 @@ if (list is Cons(a, Cons(b, Null()))) {
   puts("OK");
 };
 
-// if (list is Cons(1, (Cons(b, Null())))) {
+// if (list is Cons(1, Cons(b, Null()))) {
 //   puts(b);
 //   puts("OK");
 // };
 
-// if (list is Cons(a, (Cons(2, Null())))) {
+// if (list is Cons(a, Cons(2, Null()))) {
 //   puts(a);
 //   puts("OK");
 // };
 
-// if (list is Cons(1, (Cons(2, Null())))) {
+// if (list is Cons(1, Cons(2, Null()))) {
 //   puts("OK");
 // };
 
-// if (list is Cons(2, (Cons(b, Null())))) {
+// if (list is Cons(2, Cons(b, Null()))) {
 //   puts("NG");
 // };
 
-// if (list is Cons(1, (Cons(1, Null())))) {
+// if (list is Cons(1, Cons(1, Null()))) {
 //   puts("NG");
 // };
 
-// if (list is Cons(a, (Cons(3, Null())))) {
+// if (list is Cons(a, Cons(3, Null()))) {
 //   puts("NG");
 // };
