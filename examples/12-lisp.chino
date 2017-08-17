@@ -1,8 +1,8 @@
 data Node {
-  Cons(Node car, Node cdr)
-  Null()
-  Symbol(string value)
-  Integer(int value)
+  Cons(Node car, Node cdr),
+  Null(),
+  Symbol(string value),
+  Integer(int value),
 }
 
 string code = "";
@@ -13,12 +13,34 @@ bool cur_is(char ch) {
 }
 
 bool cur_is_alpha() {
-  if (pos < len(code)) return false;
+  if (pos >= len(code)) {
+    return false;
+  };
   let cur = ctoi(code[pos]);
   return ctoi('a') <= cur && cur <= ctoi('z');
 }
 
-void consume() {
+bool cur_is_digit() {
+  if (pos >= len(code)) {
+    return false;
+  } else {
+    int value = ctoi(code[pos]);
+    return ctoi('0') <= value && value <= ctoi('9');
+  };
+}
+
+bool eq_str(string s1, string s2) {
+  if (len(s1) != len(s2)) return false;;
+
+  for (let i = 0; i < len(s1); i += 1) {
+    if (s1[i] != s2[i]) return false;;
+  }
+
+  return true;
+}
+
+void consume(char ch) {
+  if (code[pos] != ch) return;;
   pos += 1;
 }
 
@@ -62,14 +84,29 @@ Node parse_expr() {
 }
 
 Node parse_list() {
-  return Cons(Null(), Null());
+  consume('(');
+
+  let elems = Node[]{};
+  while (!cur_is(')')) {
+    let elem = parse_expr();
+    append(elems, elem);
+    consume(' ');
+  }
+  consume(')');
+
+  let list = Null();
+  for (let i = len(elems) - 1; i >= 0; i -= 1) {
+    list = Cons(elems[i], list);
+  }
+
+  return list;
 }
 
 Node parse_symbol() {
   string val = "";
   while (cur_is_alpha()) {
-    append(val, expr[pos]);
-    consume();
+    append(val, code[pos]);
+    pos += 1;
   }
   return Symbol(val);
 }
@@ -79,23 +116,31 @@ Node parse_integer() {
 }
 
 Node eval_expr(Node ast) {
-  if (ast is Cons(name, args)) {
-    if (name == 'print') {
-      if (args is Cons(Integer(v), Null())) {
-        puts(v);
+  if (ast is Cons(Symbol(name), args)) {
+    if (eq_str(name, "print")) {
+      if (args is Cons(v, Null())) {
+        let value = eval_expr(v);
+        if (value is Integer(iv)) {
+          puts(iv);
+        };
+        return Null();
       };
-    } else if (name == '+') {
-      if (args is Cons(Integer(left), Cons(Integer(right), Null()))) {
-        return Integer(left + right);
+    } else if (eq_str(name, "plus")) {
+      if (args is Cons(left, Cons(right, Null()))) {
+        let l = eval_expr(left);
+        let r = eval_expr(right);
+        if (l is Integer(lv)) { if (r is Integer(rv)) {
+          return Integer(lv + rv);
+        };};
       };
-    };
+    };;
   };
+  return ast;
 }
 
 void eval(string code) {
   let ast = parse(code);
-  dump(ast);
+  eval_expr(ast);
 }
 
-eval("(print (+ 1 1))");
-eval("(print (+ 1 1))");
+eval("(print (plus 1 1))");
