@@ -191,7 +191,10 @@ export class Compiler implements ASTVisitor<void> {
     }
   }
   visitUnaryOpFront(node: AST.UnaryOpFront): void {
-    throw new Error("Method not implemented.");
+    if (node.right.resultType === null) throw new Error('Bug')
+
+    node.right.accept(this)
+    this.addOperation(new op.Not())
   }
   visitCallFunction(node: AST.CallFunction): void {
     node.args.forEach((arg) => arg.accept(this))

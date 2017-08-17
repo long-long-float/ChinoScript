@@ -189,6 +189,9 @@ export class VirtualMachine {
         }
         this.stack.push(result)
       },
+      'Not', (operation: op.Not) => {
+        this.stack.push(!!!this.stack.pop())
+      },
       'Jump', (operation: op.Jump) => {
         this.pcStack.top()[0] = this.labelTable[operation.destination]
       },

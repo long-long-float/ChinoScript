@@ -112,6 +112,10 @@ export class ICmp extends Operation {
   }
 }
 
+export class Not extends Operation {
+  constructor() { super() }
+}
+
 export class Jump extends Operation {
   constructor(
     public destination: number

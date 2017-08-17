@@ -154,7 +154,14 @@ export class TypeChecker implements ASTVisitor<Type> {
     return resultType
   }
   visitUnaryOpFront(node: AST.UnaryOpFront): Type {
-    throw new Error("Method not implemented.");
+    if (node.op === '!') {
+      const rightType = node.right.accept(this)
+      this.checkSatisfied(new Type('Boolean', []), rightType, node.location)
+      node.right.setResultType(rightType)
+      return rightType
+    } else {
+      throw new Error("Method not implemented.");
+    }
   }
   visitIfIsExpression(node: AST.IfIsExpression): Type {
     node.condLeft.accept(this)

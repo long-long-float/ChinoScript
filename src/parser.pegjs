@@ -199,6 +199,7 @@ term4
 
 unary
   = op:("-" / "+") _ val:factor { return unary_op_f(op, val); }
+  / "!" _ val:factor { return unary_op_f("!", val); }
   / factor
 
 factor
