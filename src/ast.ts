@@ -341,6 +341,18 @@ export class IdentifierPattern extends Pattern {
   }
 }
 
+export class LiteralPattern extends Pattern {
+  constructor(
+    public literal: Literal,
+    location: parser.Location
+  ) {
+    super(location)
+  }
+
+  collectVariables(table: { [name:string]: Type }, dct: DataConstrutorTable): void {
+  }
+}
+
 export class CallFunction extends Expression {
   constructor(
     public name: Identifier,
@@ -380,7 +392,12 @@ export class IfExpression extends Expression {
   }
 }
 
-export class IntegerLiteral extends Expression {
+export abstract class Literal extends Expression {
+  constructor(location: parser.Location) { super(location)}
+  abstract accept<T>(visitor: ASTVisitor<T>): T
+}
+
+export class IntegerLiteral extends Literal {
   constructor(
     public value: number,
     location: parser.Location
@@ -393,7 +410,7 @@ export class IntegerLiteral extends Expression {
   }
 }
 
-export class FloatLiteral extends Expression {
+export class FloatLiteral extends Literal {
   constructor(
     public value: number,
     location: parser.Location
@@ -406,7 +423,7 @@ export class FloatLiteral extends Expression {
   }
 }
 
-export class BooleanLiteral extends Expression {
+export class BooleanLiteral extends Literal {
   constructor(
     public value: boolean,
     location: parser.Location
@@ -419,7 +436,7 @@ export class BooleanLiteral extends Expression {
   }
 }
 
-export class CharLiteral extends Expression {
+export class CharLiteral extends Literal {
   constructor(
     public value: string,
     location: parser.Location
@@ -434,7 +451,7 @@ export class CharLiteral extends Expression {
   }
 }
 
-export class ArrayLiteral extends Expression {
+export class ArrayLiteral extends Literal {
   constructor(
     public type: Type,
     public values: Expression[],

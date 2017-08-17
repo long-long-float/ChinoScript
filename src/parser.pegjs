@@ -257,6 +257,8 @@ pattern
     { return new AST.DataPattern(name, args(fst_arg, rest_args)) }
   / id:identifier
     { return new AST.IdentifierPattern(id) }
+  / lit:literal
+    { return new AST.LiteralPattern(lit) }
 
 array
   = type:array_type _ "{" _ fst_value:expression? values:(_ "," _ expression)* _ "}"

@@ -257,7 +257,6 @@ export class Compiler implements ASTVisitor<void> {
       this.addOperation(new op.Store(id, false))
     })
 
-
     // then
     node.thenBlock.accept(this)
     this.addOperation(new op.Jump(endLabel.id))

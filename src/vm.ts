@@ -5,7 +5,7 @@ import { Stack } from './stack'
 import { valueToString, ExternalFunction } from './index'
 import { Environment } from './environment'
 import { Type } from './type'
-import { Pattern, DataPattern, IdentifierPattern } from './ast'
+import { Pattern, DataPattern, IdentifierPattern, LiteralPattern } from './ast'
 
 import * as util from 'util'
 
@@ -232,6 +232,8 @@ export class VirtualMachine {
             } else {
               return false
             }
+          } else if (p instanceof LiteralPattern) {
+            return t === (p.literal as any).value
           } else {
             return false
           }
